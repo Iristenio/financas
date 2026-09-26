@@ -6,12 +6,16 @@
 
 @media (max-width: 899px) {
   .menu { overflow: visible; position: relative; z-index: 16; }
+  .painel { z-index: 18; }
   .menu-item.so-largo { display: none; }
   .menu-item.so-estreito { display: flex; }
   .menu-item .rotulo-largo { display: none; }
   .menu-item .rotulo-curto { display: inline; }
 }
 
+@media (min-width: 900px) {
+  .mais-veu { display: none !important; }
+}
 .mais-veu {
   position: fixed;
   inset: 0;
@@ -174,3 +178,74 @@
   letter-spacing: 0.04em;
 }
 .secao-titulo:first-child { margin-top: 0; }
+
+/* ============ Detalhe da conta ============ */
+.detalhe-conta { display: flex; flex-direction: column; gap: 14px; user-select: text; }
+.detalhe-topo h3 { font-size: 21px; margin-bottom: 4px; overflow-wrap: anywhere; }
+.detalhe-topo .dica + .dica { margin-top: 4px; }
+.totais.compactos { grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; }
+.totais.compactos .total { padding: 10px 12px; }
+.totais.compactos .total > strong { font-size: 16px; white-space: nowrap; }
+.totais.compactos .total > span { font-size: 12.5px; }
+.acoes-detalhe { flex-wrap: nowrap; gap: 6px; }
+.acoes-detalhe .botao { flex: 1; padding: 0 8px; font-size: 14.5px; min-width: 0; }
+.detalhe-conta .secao-titulo { margin: 6px 0 0; font-size: 13px; }
+.lista.compacta { gap: 4px; }
+.linha-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--superficie-2);
+  font-size: 15px;
+}
+.linha-info small { color: var(--texto-2); }
+.botao.pequeno { min-height: 36px; padding: 0 14px; font-size: 14px; }
+html.so-pc .botao.pequeno, .com-pc .botao.pequeno { min-height: 34px; }
+
+/* ============ Opções com rádio/caixa (ajustar, antecipar) ============ */
+.opcoes-lista { display: flex; flex-direction: column; gap: 6px; }
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--borda);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.opcao input { width: 20px; height: 20px; accent-color: var(--primaria); flex: none; }
+.opcao span { display: flex; flex-direction: column; }
+.opcao small { color: var(--texto-2); font-size: 13.5px; }
+.opcao.marcada { border-color: var(--primaria); background: var(--primaria-suave); }
+.opcao:has(input:disabled) { opacity: 0.5; cursor: default; }
+
+/* ============ Rateio ============ */
+.rateio { gap: 10px; }
+.rateio-linha {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--superficie-2);
+}
+.rateio-linha > select.campo { width: 100%; background: var(--superficie); }
+.rateio-valores { display: flex; align-items: flex-end; gap: 10px; }
+.rateio-valores .campo-rotulo { flex: 1; min-width: 0; }
+.rateio-valores .campo { background: var(--superficie); }
+.rateio-total { display: flex; flex-direction: column; gap: 6px; min-width: 96px; padding-bottom: 12px; }
+.rateio-total span { font-size: 14px; font-weight: 600; color: var(--texto-2); }
+.rateio-soma { margin: 0; font-size: 15px; }
+.botao-icone:disabled { opacity: 0.3; }
+.botao svg { width: 20px; height: 20px; }
+
+.mais-filtros { display: none; }
+@media (max-width: 899px) {
+  .mais-filtros { display: inline-flex; grid-column: 1 / -1; justify-self: start; }
+  .filtros:not(.abertos) .filtro.extra { display: none; }
+}

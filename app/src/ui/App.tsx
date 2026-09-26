@@ -13,7 +13,10 @@ import { TelaInicio } from './telas/TelaInicio';
 import { TelaAjustes } from './telas/TelaAjustes';
 import { lerAbaCadastro, TelaCadastros } from './telas/TelaCadastros';
 import { FormCategoria, FormFonte, FormMeio, FormPessoa } from './paineis/FormCadastros';
-import { IconeEtiqueta } from './icones';
+import { FormNovaConta } from './paineis/FormNovaConta';
+import { DetalheConta } from './paineis/DetalheConta';
+import { TelaLancamentos } from './telas/TelaLancamentos';
+import { IconeEtiqueta, IconeLista } from './icones';
 
 function EmBreve({ titulo, etapa }: { titulo: string; etapa: number }) {
   return (
@@ -35,7 +38,7 @@ function EmBreve({ titulo, etapa }: { titulo: string; etapa: number }) {
 /** ► Nova tela: acrescente aqui (e em TELAS/MENU, em rotas.ts). */
 const TELA: Record<Tela, () => JSX.Element> = {
   inicio: TelaInicio,
-  lancamentos: () => <EmBreve titulo="Lançamentos" etapa={2} />,
+  lancamentos: TelaLancamentos,
   pagar: () => <EmBreve titulo="Pagar parcelas" etapa={3} />,
   monitoramento: () => <EmBreve titulo="Monitoramento" etapa={4} />,
   recorrentes: () => <EmBreve titulo="Recorrentes" etapa={4} />,
@@ -59,7 +62,7 @@ function tituloPainel(p: Painel): string {
     case 'nova-conta':
       return 'Nova conta';
     case 'conta':
-      return 'Conta';
+      return p.modo === 'editar' ? 'Editar conta' : p.modo === 'ajustar' ? 'Ajustar valor' : p.modo === 'antecipar' ? 'Antecipar parcelas' : 'Conta';
     case 'gasto':
       return p.id ? 'Gasto' : 'Novo gasto';
     case 'entrada':
@@ -77,6 +80,10 @@ function ConteudoPainel({ painel }: { painel: Painel }) {
       return <FormPessoa id={painel.id} />;
     case 'fonte':
       return <FormFonte id={painel.id} />;
+    case 'nova-conta':
+      return <FormNovaConta />;
+    case 'conta':
+      return <DetalheConta key={`${painel.id}-${painel.modo ?? 'ver'}`} id={painel.id} modo={painel.modo} />;
     default:
       return <p class="dica">Em construção.</p>;
   }
@@ -94,8 +101,11 @@ function Estrutura() {
   }, [permitida]);
 
   /** Opções do botão "+" em cada tela (com uma só, ele cria direto). */
+  const novaConta: OpcaoNovo = { rotulo: 'Nova conta', Icone: IconeLista, acao: () => abrirPainel({ tipo: 'nova-conta' }) };
   const opcoesNovo: OpcaoNovo[] =
-    tela === 'cadastros'
+    tela === 'inicio' || tela === 'lancamentos' || tela === 'pagar' || tela === 'monitoramento' || tela === 'recorrentes'
+      ? [novaConta]
+      : tela === 'cadastros'
       ? [
           {
             rotulo: 'Novo cadastro',

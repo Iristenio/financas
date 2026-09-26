@@ -28,6 +28,7 @@ export function MenuLateral({ atual }: { atual: Tela }) {
   const { ehAdmin } = usePerfil();
   const [maisAberto, setMaisAberto] = useState(false);
   const status = !online && sync.status !== 'desconectado' ? 'offline' : sync.status;
+  useEffect(() => setMaisAberto(false), [atual]);
 
   const itens = MENU.filter((m) => ehAdmin || !m.soAdmin);
   const principais = telasPrincipaisCelular(ehAdmin);

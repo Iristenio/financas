@@ -20,4 +20,8 @@ document.title = APP.nome;
 garantirDadosIniciais().then(() => iniciarSincronizacao());
 pedirArmazenamentoPersistente();
 
-render(<App />, document.getElementById('app')!);
+// Em desenvolvimento, a recarga automática pode reexecutar este arquivo: limpa a tela anterior
+// antes de desenhar de novo (senão ficam duas cópias do app, uma delas parada).
+const raiz = document.getElementById('app')!;
+raiz.replaceChildren();
+render(<App />, raiz);
