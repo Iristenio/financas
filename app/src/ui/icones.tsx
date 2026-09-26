@@ -124,3 +124,65 @@ export const IconeAlerta = (p: Props) => (
     <path d="M12 9v4M12 17h.01" />
   </Base>
 );
+
+export const IconeCartao = (p: Props) => (
+  <Base {...p}>
+    <rect x="2.5" y="5" width="19" height="14" rx="3" />
+    <path d="M2.5 10h19M6.5 15h4" />
+  </Base>
+);
+
+export const IconeCarteira = (p: Props) => (
+  <Base {...p}>
+    <path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2H5" />
+    <path d="M16.5 14h.01" stroke-width={3} />
+  </Base>
+);
+
+export const IconePagar = (p: Props) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M8 12.5l2.7 2.7L16 9.8" />
+  </Base>
+);
+
+export const IconeGrafico = (p: Props) => (
+  <Base {...p}>
+    <path d="M4 20V4M4 20h16" />
+    <path d="M8 16v-5M12 16V8M16 16v-3" />
+  </Base>
+);
+
+export const IconeRecibo = (p: Props) => (
+  <Base {...p}>
+    <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" />
+    <path d="M9 8h6M9 12h6" />
+  </Base>
+);
+
+export const IconeEtiqueta = (p: Props) => (
+  <Base {...p}>
+    <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z" />
+    <path d="M7.5 7.5h.01" stroke-width={3} />
+  </Base>
+);
+
+export const IconePessoa = (p: Props) => (
+  <Base {...p}>
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" />
+  </Base>
+);
+
+export const IconeMenuMais = (p: Props) => (
+  <Base {...p}>
+    <path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width={3.2} />
+  </Base>
+);
+
+export const IconeEntrada = (p: Props) => (
+  <Base {...p}>
+    <path d="M12 4v12M7 11l5 5 5-5" />
+    <path d="M4 20h16" />
+  </Base>
+);

@@ -2,12 +2,36 @@
 // Regras: nada é apagado de verdade (exclusão lógica via status); toda gravação carimba
 // atualizado_em e entra na fila, que o motor de sincronização envia quando houver internet.
 import { abrirBanco } from './db';
-import type { Config, Entidade, Item, ItemFila, Registro } from '../dominio/tipos';
+import type {
+  CarteiraConfig,
+  Categoria,
+  Config,
+  Entidade,
+  Entrada,
+  Fonte,
+  GastoRotineiro,
+  ItemFila,
+  Lancamento,
+  MeioPagamento,
+  Parcela,
+  Pessoa,
+  Rateio,
+  Registro,
+} from '../dominio/tipos';
 import { CONFIG_PADRAO, ENTIDADES } from '../dominio/tipos';
 
 /** ► Nova entidade: acrescente aqui o tipo correspondente. */
 export type MapaEntidades = {
-  itens: Item;
+  categorias: Categoria;
+  meios_pagamento: MeioPagamento;
+  pessoas: Pessoa;
+  lancamentos: Lancamento;
+  rateios: Rateio;
+  parcelas: Parcela;
+  gastos_rotineiros: GastoRotineiro;
+  fontes: Fonte;
+  entradas: Entrada;
+  carteira_config: CarteiraConfig;
 };
 
 export const novoId = (): string => crypto.randomUUID();
@@ -211,8 +235,21 @@ export async function salvarConfig(parcial: Partial<Config>) {
  * ao restaurar da planilha) ou migrar dados antigos uma única vez (guardando uma marca com salvarInterno).
  */
 export async function garantirDadosIniciais(_agora = new Date()) {
-  // Exemplo:
-  // if (!(await buscar('itens', 'boas-vindas'))) await salvar('itens', { id: 'boas-vindas', ... });
+  // Nada por enquanto: as fontes da Carteira são criadas quando o Admin inicia a carteira
+  // (assim o aparelho do Colaborador nunca cria registros que ele não pode enviar).
+}
+
+/**
+ * Apaga todos os dados locais das entidades e a fila (usado antes de importar os dados do app antigo).
+ * Não mexe na conexão nem nas preferências.
+ */
+export async function limparDadosLocais() {
+  const db = await abrirBanco();
+  const lojas: (Entidade | 'fila_sync')[] = [...ENTIDADES, 'fila_sync'];
+  const tx = db.transaction(lojas, 'readwrite');
+  for (const loja of lojas) await tx.objectStore(loja).clear();
+  await tx.done;
+  avisarMudanca();
 }
 
 /** RS09 — pede ao navegador para não apagar os dados locais. */

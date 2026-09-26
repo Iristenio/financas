@@ -7,6 +7,7 @@ import './estilos/global.css';
 import './estilos/formularios.css';
 import './estilos/itens.css';
 import './estilos/ajustes.css';
+import './estilos/financas.css';
 
 // Perfil de dispositivos (app.config.ts) → classes que ajustam o layout (ver global.css)
 const html = document.documentElement;

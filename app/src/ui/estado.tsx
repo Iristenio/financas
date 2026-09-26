@@ -3,7 +3,18 @@ import { createContext, type ComponentChildren } from 'preact';
 import { useCallback, useContext, useMemo, useRef, useState } from 'preact/hooks';
 
 /** ► Novo formulário/painel: acrescente um tipo aqui e trate em App.tsx (título e conteúdo). */
-export type Painel = { tipo: 'item'; id?: string };
+export type Painel =
+  | { tipo: 'categoria'; id?: string }
+  | { tipo: 'meio'; id?: string }
+  | { tipo: 'pessoa'; id?: string }
+  | { tipo: 'fonte'; id?: string }
+  | { tipo: 'nova-conta' }
+  | { tipo: 'conta'; id: string; modo?: ModoConta }
+  | { tipo: 'gasto'; id?: string }
+  | { tipo: 'entrada'; id?: string };
+
+/** Sub-telas do detalhe de uma conta. */
+export type ModoConta = 'ver' | 'editar' | 'ajustar' | 'antecipar';
 
 export interface Aviso {
   texto: string;

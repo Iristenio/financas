@@ -7,17 +7,35 @@
 
 var VERSAO_API = 1;
 
-// Tipos: s = texto, s? = texto ou vazio (null), n = número, b = sim/não, j = lista/objeto (JSON)
+// Tipos: s = texto, s? = texto ou vazio (null), n = número, n? = número ou vazio (null),
+// b = sim/não, j = lista/objeto (JSON)
 // Campos novos entram SEMPRE no fim da lista (antes de _recebido_em), com migração em garantirEstrutura().
+var FIM = [['excluido', 'b'], ['criado_em', 's'], ['atualizado_em', 's']];
+
 var ESQUEMA = {
   // ► Nova entidade: acrescente aqui (mesmos campos do tipo em app/src/dominio/tipos.ts).
-  itens: {
-    aba: 'ITENS',
-    campos: [
-      ['id', 's'], ['titulo', 's'], ['descricao', 's'], ['data', 's?'], ['hora', 's?'], ['status', 's'],
-      ['criado_em', 's'], ['atualizado_em', 's'],
-    ],
+  categorias: { aba: 'CATEGORIAS', campos: [['id', 's'], ['nome', 's'], ['ativo', 'b']].concat(FIM) },
+  meios_pagamento: {
+    aba: 'MEIOS_PAGAMENTO',
+    campos: [['id', 's'], ['nome', 's'], ['tipo', 's'], ['dia_fechamento', 'n?'], ['dia_vencimento', 'n?'], ['ativo', 'b']].concat(FIM),
   },
+  pessoas: { aba: 'PESSOAS', campos: [['id', 's'], ['nome', 's'], ['tipo', 's'], ['papel', 's?'], ['ativo', 'b']].concat(FIM) },
+  lancamentos: {
+    aba: 'LANCAMENTOS',
+    campos: [['id', 's'], ['data', 's'], ['categoria_id', 's'], ['meio_pagamento_id', 's'], ['descricao', 's'], ['observacao', 's'], ['recorrente', 'b']].concat(FIM),
+  },
+  rateios: { aba: 'RATEIOS', campos: [['id', 's'], ['lancamento_id', 's'], ['pessoa_id', 's'], ['percentual', 'n']].concat(FIM) },
+  parcelas: {
+    aba: 'PARCELAS',
+    campos: [['id', 's'], ['lancamento_id', 's'], ['numero', 'n'], ['mes_vencimento', 's'], ['valor', 'n'], ['status', 's'], ['data_pagamento', 's?']].concat(FIM),
+  },
+  gastos_rotineiros: {
+    aba: 'GASTOS_ROTINEIROS',
+    campos: [['id', 's'], ['data', 's'], ['categoria_id', 's'], ['meio_pagamento_id', 's'], ['pessoa_id', 's'], ['descricao', 's'], ['valor', 'n']].concat(FIM),
+  },
+  fontes: { aba: 'FONTES', campos: [['id', 's'], ['nome', 's'], ['ativo', 'b']].concat(FIM) },
+  entradas: { aba: 'ENTRADAS', campos: [['id', 's'], ['data', 's'], ['fonte_id', 's'], ['valor', 'n'], ['descricao', 's']].concat(FIM) },
+  carteira_config: { aba: 'CARTEIRA', campos: [['id', 's'], ['data_inicio', 's?'], ['criado_em', 's'], ['atualizado_em', 's']] },
 };
 
 var COLUNA_RECEBIDO = '_recebido_em';
@@ -55,6 +73,7 @@ function linhaParaRegistro(entidade, linha) {
     switch (c[1]) {
       case 's?': registro[c[0]] = texto === '' ? null : texto; break;
       case 'n': registro[c[0]] = texto === '' ? 0 : Number(texto); break;
+      case 'n?': registro[c[0]] = texto === '' ? null : Number(texto); break;
       case 'b': registro[c[0]] = texto === 'SIM' || texto === 'TRUE' || texto === 'true' || bruto === true; break;
       case 'j':
         try { registro[c[0]] = texto ? JSON.parse(texto) : []; } catch (e) { registro[c[0]] = []; }

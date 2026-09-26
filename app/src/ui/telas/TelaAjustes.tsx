@@ -2,7 +2,9 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Config } from '../../dominio/tipos';
 import { salvarConfig } from '../../dados/repositorio';
-import { useConfig } from '../../dados/ganchos';
+import { useConfig, useEntidade } from '../../dados/ganchos';
+import { paraEscolha } from '../../dominio/cadastros';
+import { usePerfil } from '../perfil';
 import { baixarTudo, conectar, desconectar, ErroApi, sincronizar } from '../../sync/motor';
 import { APP } from '../../app.config';
 import { descreverUltimaSync, ROTULO_STATUS, useSync } from '../../sync/ganchos';
@@ -134,46 +136,36 @@ function CartaoGoogle() {
   );
 }
 
-/* ---------------- Preferências ---------------- */
+/* ---------------- Quem usa este aparelho ---------------- */
 
 function CartaoPreferencias() {
   const config = useConfig();
+  const pessoas = paraEscolha(useEntidade('pessoas').filter((p) => p.tipo === 'Membro do Domicílio'), config.pessoa_id);
+  const { papel } = usePerfil();
   const mudar = (parcial: Partial<Config>) => salvarConfig(parcial);
 
   return (
     <section class="cartao">
-      <h2>Preferências</h2>
+      <h2>Quem usa este aparelho</h2>
       <div class="preferencias">
         <label>
-          <span>A semana começa no</span>
-          <div class="segmentado pequeno">
-            <button role="radio" aria-checked={config.primeiro_dia_semana === 0} onClick={() => mudar({ primeiro_dia_semana: 0 })}>
-              Domingo
-            </button>
-            <button role="radio" aria-checked={config.primeiro_dia_semana === 1} onClick={() => mudar({ primeiro_dia_semana: 1 })}>
-              Segunda
-            </button>
-          </div>
+          <span>Pessoa</span>
+          <select class="campo" value={config.pessoa_id ?? ''} onChange={(e) => mudar({ pessoa_id: e.currentTarget.value || null })}>
+            <option value="">(não escolhida — acesso completo)</option>
+            {pessoas.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nome} ({p.papel})
+              </option>
+            ))}
+          </select>
         </label>
       </div>
-      <p class="dica">As preferências valem para este aparelho.</p>
+      <p class="dica">
+        Define o nome que já vem preenchido nos formulários e o acesso deste aparelho (agora: <strong>{papel}</strong>). O
+        Colaborador não vê Gastos nem Carteira. Quando a sincronização com o Google for ligada, isso passa a vir do código de
+        conexão de cada pessoa.
+      </p>
     </section>
-  );
-}
-
-export function Numero(props: { rotulo: string; sufixo: string; valor: number; opcoes: number[]; aoMudar: (v: number) => void }) {
-  return (
-    <label>
-      <span>{props.rotulo}</span>
-      <span class="linha">
-        <select class="campo" value={props.valor} onChange={(e) => props.aoMudar(Number(e.currentTarget.value))}>
-          {props.opcoes.map((n) => (
-            <option key={n} value={n}>{n}</option>
-          ))}
-        </select>
-        {props.sufixo}
-      </span>
-    </label>
   );
 }
 
