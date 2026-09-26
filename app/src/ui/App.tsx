@@ -17,6 +17,8 @@ import { FormNovaConta } from './paineis/FormNovaConta';
 import { DetalheConta } from './paineis/DetalheConta';
 import { TelaLancamentos } from './telas/TelaLancamentos';
 import { TelaPagar } from './telas/TelaPagar';
+import { TelaMonitoramento } from './telas/TelaMonitoramento';
+import { TelaRecorrentes } from './telas/TelaRecorrentes';
 import { IconeEtiqueta, IconeLista } from './icones';
 
 function EmBreve({ titulo, etapa }: { titulo: string; etapa: number }) {
@@ -38,11 +40,11 @@ function EmBreve({ titulo, etapa }: { titulo: string; etapa: number }) {
 
 /** ► Nova tela: acrescente aqui (e em TELAS/MENU, em rotas.ts). */
 const TELA: Record<Tela, () => JSX.Element> = {
-  inicio: TelaInicio,
+  inicio: () => <TelaInicio />,
   lancamentos: TelaLancamentos,
   pagar: TelaPagar,
-  monitoramento: () => <EmBreve titulo="Monitoramento" etapa={4} />,
-  recorrentes: () => <EmBreve titulo="Recorrentes" etapa={4} />,
+  monitoramento: TelaMonitoramento,
+  recorrentes: TelaRecorrentes,
   gastos: () => <EmBreve titulo="Gastos" etapa={5} />,
   carteira: () => <EmBreve titulo="Carteira" etapa={5} />,
   cadastros: TelaCadastros,

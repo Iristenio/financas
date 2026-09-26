@@ -1,6 +1,9 @@
 /* ============ Menu com "Mais" (celular) ============ */
-.menu { overflow-y: auto; }
-.menu-item { min-height: 62px; text-align: center; line-height: 1.15; }
+.menu { overflow-y: auto; overflow-x: hidden; }
+.menu-item { text-align: center; line-height: 1.15; }
+@media (min-width: 900px) {
+  .menu-item { min-height: 62px; width: 86px; font-size: 12px; }
+}
 .menu-item .rotulo-curto,
 .menu-item.so-estreito { display: none; }
 
@@ -296,3 +299,42 @@ html.so-pc .botao.pequeno, .com-pc .botao.pequeno { min-height: 34px; }
   .barra-pagar { left: 12px; right: 12px; bottom: 96px; }
   .barra-pagar .botao.primario { flex: 1; }
 }
+
+/* ============ Monitoramento / Início ============ */
+.linha-info.grande { font-size: 16.5px; padding: 12px 14px; }
+.linha-botao { width: 100%; text-align: left; cursor: pointer; }
+.linha-botao > span { min-width: 0; flex: 1; }
+.bloco-dobra {
+  margin-top: 16px;
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 4px 12px;
+  background: var(--superficie);
+}
+.bloco-dobra summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 650;
+  list-style: none;
+  gap: 10px;
+}
+.bloco-dobra summary::-webkit-details-marker { display: none; }
+.bloco-dobra summary::before { content: '▸'; color: var(--primaria); transition: transform 0.15s; }
+.bloco-dobra[open] summary::before { transform: rotate(90deg); }
+.bloco-dobra[open] summary { margin-bottom: 6px; }
+.bloco-dobra[open] { padding-bottom: 12px; }
+.botao-total { text-align: left; cursor: pointer; }
+.colunas.inicio { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+/* ============ Recorrentes ============ */
+.linha-reg.sem-cursor { cursor: default; flex-wrap: wrap; }
+.botao-limpo { text-align: left; cursor: pointer; }
+.renovar { display: flex; align-items: flex-end; gap: 10px; }
+.renovar .campo { min-height: 44px; }
+
+/* ============ Progresso (importação) ============ */
+.progresso { position: relative; border-radius: 10px; background: var(--superficie-2); overflow: hidden; min-height: 40px; display: flex; align-items: center; padding: 0 14px; }
+.progresso-barra { position: absolute; inset: 0 auto 0 0; background: var(--primaria-suave); transition: width 0.3s; }
+.progresso span { position: relative; font-size: 14px; }

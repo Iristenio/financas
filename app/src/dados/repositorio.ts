@@ -240,14 +240,17 @@ export async function garantirDadosIniciais(_agora = new Date()) {
 }
 
 /**
- * Apaga todos os dados locais das entidades e a fila (usado antes de importar os dados do app antigo).
- * Não mexe na conexão nem nas preferências.
+ * Apaga os dados locais das entidades indicadas e os itens delas na fila de envio
+ * (usado antes de importar os dados do app antigo). Não mexe nas demais entidades,
+ * na conexão nem nas preferências.
  */
-export async function limparDadosLocais() {
+export async function limparEntidades(entidades: readonly Entidade[]) {
   const db = await abrirBanco();
-  const lojas: (Entidade | 'fila_sync')[] = [...ENTIDADES, 'fila_sync'];
+  const lojas: (Entidade | 'fila_sync')[] = [...entidades, 'fila_sync'];
   const tx = db.transaction(lojas, 'readwrite');
-  for (const loja of lojas) await tx.objectStore(loja).clear();
+  for (const e of entidades) await tx.objectStore(e).clear();
+  const fila = tx.objectStore('fila_sync');
+  for (const item of await fila.getAll()) if (entidades.includes(item.entidade)) await fila.delete(item.id);
   await tx.done;
   avisarMudanca();
 }
