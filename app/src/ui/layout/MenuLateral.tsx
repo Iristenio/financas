@@ -48,6 +48,7 @@ export function MenuLateral({ atual }: { atual: Tela }) {
             key={tela}
             class={`menu-item${principais.includes(tela) ? '' : ' so-largo'}`}
             aria-current={tela === atual ? 'page' : undefined}
+            aria-label={rotulo}
             onClick={() => ir(tela)}
           >
             <Icone />

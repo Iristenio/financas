@@ -16,6 +16,7 @@ import { FormCategoria, FormFonte, FormMeio, FormPessoa } from './paineis/FormCa
 import { FormNovaConta } from './paineis/FormNovaConta';
 import { DetalheConta } from './paineis/DetalheConta';
 import { TelaLancamentos } from './telas/TelaLancamentos';
+import { TelaPagar } from './telas/TelaPagar';
 import { IconeEtiqueta, IconeLista } from './icones';
 
 function EmBreve({ titulo, etapa }: { titulo: string; etapa: number }) {
@@ -39,7 +40,7 @@ function EmBreve({ titulo, etapa }: { titulo: string; etapa: number }) {
 const TELA: Record<Tela, () => JSX.Element> = {
   inicio: TelaInicio,
   lancamentos: TelaLancamentos,
-  pagar: () => <EmBreve titulo="Pagar parcelas" etapa={3} />,
+  pagar: TelaPagar,
   monitoramento: () => <EmBreve titulo="Monitoramento" etapa={4} />,
   recorrentes: () => <EmBreve titulo="Recorrentes" etapa={4} />,
   gastos: () => <EmBreve titulo="Gastos" etapa={5} />,
