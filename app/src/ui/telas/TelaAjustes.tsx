@@ -5,6 +5,7 @@ import { salvarConfig } from '../../dados/repositorio';
 import { useConfig, useEntidade } from '../../dados/ganchos';
 import { paraEscolha } from '../../dominio/cadastros';
 import { usePerfil } from '../perfil';
+import { lerTema, salvarTema, type Tema } from '../tema';
 import { importarDoAppAntigo, type ResultadoImportacao } from '../acoes/importar';
 import { baixarTudo, conectar, desconectar, ErroApi, sincronizar } from '../../sync/motor';
 import { APP } from '../../app.config';
@@ -20,6 +21,7 @@ export function TelaAjustes() {
       <div class="conteudo ajustes">
         <CartaoGoogle />
         <CartaoPreferencias />
+        <CartaoAparencia />
         <CartaoImportar />
         <CartaoAparelho />
       </div>
@@ -139,6 +141,35 @@ function CartaoGoogle() {
 }
 
 /* ---------------- Quem usa este aparelho ---------------- */
+
+function CartaoAparencia() {
+  const [tema, setTema] = useState<Tema>(lerTema);
+  const escolher = (t: Tema) => {
+    setTema(t);
+    salvarTema(t);
+  };
+  const opcoes: [Tema, string][] = [
+    ['sistema', 'Sistema'],
+    ['claro', 'Claro'],
+    ['escuro', 'Escuro'],
+  ];
+  return (
+    <section class="cartao">
+      <h2>Aparência</h2>
+      <div class="preferencias">
+        <span>Tema</span>
+        <div class="segmentado pequeno" role="radiogroup" aria-label="Tema">
+          {opcoes.map(([valor, rotulo]) => (
+            <button key={valor} type="button" role="radio" aria-checked={tema === valor} onClick={() => escolher(valor)}>
+              {rotulo}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p class="dica">“Sistema” segue o modo claro/escuro do aparelho. A escolha vale só para este aparelho.</p>
+    </section>
+  );
+}
 
 function CartaoPreferencias() {
   const config = useConfig();
