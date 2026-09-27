@@ -3,7 +3,7 @@
 Base: `ESPECIFICACAO.md`. Cada etapa termina com algo **usável** no celular e no PC, publicado no GitHub
 Pages. As regras de negócio ficam em `app/src/dominio/` com testes automáticos.
 
-O app atual continua sendo o **oficial** até a etapa 8. Até a etapa 6, o app novo funciona só no aparelho
+O app antigo foi o **oficial** até a etapa 8 (virada em 2026-09-26). Até a etapa 6, o app novo funciona só no aparelho
 (sem planilha) — dá para testar à vontade sem risco para os dados reais.
 
 | # | Etapa | Entrega (o que você consegue fazer) | Regras |
@@ -15,8 +15,8 @@ O app atual continua sendo o **oficial** até a etapa 8. Até a etapa 6, o app n
 | 4 ✅ | **Acompanhamento** | Monitoramento, Recorrentes (renovar) e tela de Início com o resumo do mês | R11, R12, R15 |
 | 5 ✅ | **Só do Admin** | Lançar/Histórico (gastos rotineiros) e **Carteira** (fontes, entradas, saldo disponível) | C1–C9 |
 | 6 ✅ | **Sincronização** | Backend na conta pessoal com **um código por pessoa** e bloqueio do Colaborador no servidor; planilha nova; app do Paulo sem Lançar/Histórico/Carteira | P1–P4 |
-| 7 | **Migração (ensaio)** | Script que copia os dados do app atual para uma planilha de ensaio; conferência dos totais nos dois apps | M1–M3 |
-| 8 | **Virada** | Migração final, instalação nos aparelhos, app antigo só para consulta | M4 |
+| 7 ✅ | **Migração (ensaio)** | Script que copia os dados do app atual para uma planilha de ensaio; conferência dos totais nos dois apps | M1–M3 |
+| 8 ✅ | **Virada** | Migração final, instalação nos aparelhos, app antigo só para consulta | M4 |
 
 ## Como cada etapa é conferida
 
@@ -42,4 +42,8 @@ O app atual continua sendo o **oficial** até a etapa 8. Até a etapa 6, o app n
   `backend/configurar.js`), bloqueio do Colaborador no servidor e o app assume a pessoa/papel do código.
 - Backend publicado na conta pessoal em 2026-09-26 (projeto "Finanças API", planilha "Finanças - dados").
   PC do Iristenio conectado; a planilha recebeu exatamente os dados importados (59 contas, 673 parcelas…).
+- Etapas 7 e 8 (2026-09-26): a migração foi feita pelo importador (Ajustes); os totais do app antigo e do novo
+  conferem (59 contas, 673 parcelas, 314 pagas = R$ 60.721,29, total R$ 224.763,19, 22 gastos).
+  O endereço antigo (iristenio.github.io/projeto-financas) agora só mostra o aviso "Este app foi substituído"
+  com link para o novo. A planilha e o Apps Script antigos (conta Unilab) ficam guardados como arquivo.
 - Falta: instalar no aparelho do Paulo com o código dele (conferir que não aparecem Gastos/Carteira).
