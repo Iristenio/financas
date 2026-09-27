@@ -14,7 +14,7 @@ O app atual continua sendo o **oficial** até a etapa 8. Até a etapa 6, o app n
 | 3 ✅ | **Pagar e ajustar** | Pagar parcelas em lote; ajustar valor (3 modos); antecipar (manter/comprimir); editar; excluir (tudo/só abertas) — tudo com **Desfazer** | R7–R10 |
 | 4 ✅ | **Acompanhamento** | Monitoramento, Recorrentes (renovar) e tela de Início com o resumo do mês | R11, R12, R15 |
 | 5 ✅ | **Só do Admin** | Lançar/Histórico (gastos rotineiros) e **Carteira** (fontes, entradas, saldo disponível) | C1–C9 |
-| 6 | **Sincronização** | Backend na conta pessoal com **um código por pessoa** e bloqueio do Colaborador no servidor; planilha nova; app do Paulo sem Lançar/Histórico/Carteira | P1–P4 |
+| 6 ✅ | **Sincronização** | Backend na conta pessoal com **um código por pessoa** e bloqueio do Colaborador no servidor; planilha nova; app do Paulo sem Lançar/Histórico/Carteira | P1–P4 |
 | 7 | **Migração (ensaio)** | Script que copia os dados do app atual para uma planilha de ensaio; conferência dos totais nos dois apps | M1–M3 |
 | 8 | **Virada** | Migração final, instalação nos aparelhos, app antigo só para consulta | M4 |
 
@@ -40,4 +40,6 @@ O app atual continua sendo o **oficial** até a etapa 8. Até a etapa 6, o app n
   conferido com os dados reais: totais do mês, saldo devedor total e a parte do Iristenio batem ao centavo.
 - Etapa 6, parte do código (pronta e testada): um token por pessoa no servidor (`USUARIOS` em
   `backend/configurar.js`), bloqueio do Colaborador no servidor e o app assume a pessoa/papel do código.
-- Próximo: publicar o backend na conta pessoal — precisa do login no clasp e de executar `configurar()`.
+- Backend publicado na conta pessoal em 2026-09-26 (projeto "Finanças API", planilha "Finanças - dados").
+  PC do Iristenio conectado; a planilha recebeu exatamente os dados importados (59 contas, 673 parcelas…).
+- Falta: instalar no aparelho do Paulo com o código dele (conferir que não aparecem Gastos/Carteira).
