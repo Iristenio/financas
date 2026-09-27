@@ -38,4 +38,6 @@ O app atual continua sendo o **oficial** até a etapa 8. Até a etapa 6, o app n
 - Etapas 0 a 5 concluídas em 2026-09-26 (53 testes automáticos).
 - Adiantado da etapa 7: o importador (Ajustes → "Importar do app antigo", só Admin) já existe e foi
   conferido com os dados reais: totais do mês, saldo devedor total e a parte do Iristenio batem ao centavo.
-- Próximo: etapa 6 (sincronização por pessoa) — precisa do login no clasp com a conta pessoal.
+- Etapa 6, parte do código (pronta e testada): um token por pessoa no servidor (`USUARIOS` em
+  `backend/configurar.js`), bloqueio do Colaborador no servidor e o app assume a pessoa/papel do código.
+- Próximo: publicar o backend na conta pessoal — precisa do login no clasp e de executar `configurar()`.

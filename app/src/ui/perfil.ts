@@ -1,5 +1,6 @@
 // Quem está usando este aparelho e com qual papel.
-// Até a sincronização por pessoa (etapa 6), a pessoa é escolhida em Ajustes; sem escolha, vale Admin.
+// Conectado à planilha: a pessoa e o papel vêm do código de conexão (o servidor decide).
+// Só no aparelho: a pessoa é escolhida em Ajustes; sem escolha, vale Admin.
 import type { Papel, Pessoa } from '../dominio/tipos';
 import { useConfig, useEntidade } from '../dados/ganchos';
 
@@ -13,6 +14,6 @@ export function usePerfil(): Perfil {
   const config = useConfig();
   const pessoas = useEntidade('pessoas');
   const pessoa = pessoas.find((p) => p.id === config.pessoa_id && !p.excluido) ?? null;
-  const papel: Papel = pessoa?.papel ?? 'Admin';
+  const papel: Papel = config.papel_servidor ?? pessoa?.papel ?? 'Admin';
   return { pessoa, papel, ehAdmin: papel === 'Admin' };
 }

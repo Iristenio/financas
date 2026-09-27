@@ -152,7 +152,7 @@ function CartaoPreferencias() {
       <div class="preferencias">
         <label>
           <span>Pessoa</span>
-          <select class="campo" value={config.pessoa_id ?? ''} onChange={(e) => mudar({ pessoa_id: e.currentTarget.value || null })}>
+          <select class="campo" disabled={!!config.papel_servidor} value={config.pessoa_id ?? ''} onChange={(e) => mudar({ pessoa_id: e.currentTarget.value || null })}>
             <option value="">(não escolhida — acesso completo)</option>
             {pessoas.map((p) => (
               <option key={p.id} value={p.id}>
@@ -170,8 +170,10 @@ function CartaoPreferencias() {
       )}
       <p class="dica">
         Define o nome que já vem preenchido nos formulários e o acesso deste aparelho (agora: <strong>{papel}</strong>). O
-        Colaborador não vê Gastos nem Carteira. Quando a sincronização com o Google for ligada, isso passa a vir do código de
-        conexão de cada pessoa.
+        Colaborador não vê Gastos nem Carteira.{' '}
+        {config.papel_servidor
+          ? 'Como este aparelho está conectado à planilha, a pessoa vem do código de conexão e não pode ser trocada aqui.'
+          : 'Quando a sincronização for ligada, isso passa a vir do código de conexão de cada pessoa.'}
       </p>
     </section>
   );

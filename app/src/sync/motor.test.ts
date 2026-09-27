@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 import { createRequire } from 'node:module';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { abrirBanco, fecharBanco, NOME_BANCO } from '../dados/db';
-import { buscar, listarFila, salvar, salvarInterno } from '../dados/repositorio';
+import { buscar, lerConfig, listarTodos, listarFila, salvar, salvarInterno } from '../dados/repositorio';
 import { novaCategoria, novoMeio } from '../dominio/cadastros';
 import { baixarTudo, decodificarCodigo, lerEstadoSync, sincronizar } from './motor';
 
@@ -12,6 +12,11 @@ const require = createRequire(import.meta.url);
 const nucleo = require('../../../backend/nucleo.js');
 
 const TOKEN = 'segredo';
+const TOKEN_COLAB = 'colab';
+const USUARIOS: Record<string, { nome: string; pessoa_id: string; papel: string }> = {
+  [TOKEN]: { nome: 'Iristenio', pessoa_id: 'pes-1', papel: 'Admin' },
+  [TOKEN_COLAB]: { nome: 'Paulo', pessoa_id: 'pes-2', papel: 'Colaborador' },
+};
 let tabelas: Record<string, ReturnType<typeof nucleo.tabelaEmMemoria>>;
 let relogio = 0;
 const agoraServidor = () => new Date(Date.UTC(2026, 0, 1, 12, 0, relogio++)).toISOString();
@@ -20,7 +25,8 @@ function instalarServidor() {
   tabelas = Object.fromEntries(Object.keys(nucleo.ESQUEMA).map((e) => [e, nucleo.tabelaEmMemoria()]));
   vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
     const req = JSON.parse(String(init.body));
-    const corpo = req.token !== TOKEN ? { ok: false, erro: 'Token inválido', codigo: 401 } : nucleo.processar(tabelas, req, agoraServidor());
+    const usuario = USUARIOS[req.token];
+    const corpo = !usuario ? { ok: false, erro: 'Token inválido', codigo: 401 } : nucleo.processar(tabelas, req, agoraServidor(), usuario);
     return { ok: true, status: 200, json: async () => corpo } as Response;
   });
 }
@@ -100,5 +106,31 @@ describe('sincronização', () => {
     await (await abrirBanco()).clear('categorias');
     await baixarTudo();
     expect((await buscar('categorias', 'i1'))?.nome).toBe('a');
+  });
+});
+
+describe('permissões por pessoa (P1, P2)', () => {
+  const gasto = (id: string) => ({ id, data: '2026-01-05', categoria_id: 'c', meio_pagamento_id: 'm', pessoa_id: 'pes-1', descricao: '', valor: 10, excluido: false, criado_em: 'x', atualizado_em: '2026-01-01T10:00:00.000Z' });
+
+  it('o Admin recebe tudo e o aparelho assume a pessoa do código', async () => {
+    outroAparelhoEnvia('gastos_rotineiros', gasto('g1'));
+    await sincronizar();
+    expect(await buscar('gastos_rotineiros', 'g1')).toBeTruthy();
+    expect(await lerConfig()).toMatchObject({ pessoa_id: 'pes-1', papel_servidor: 'Admin' });
+  });
+
+  it('o Colaborador não recebe nem grava dados só do Admin, e a fila não trava', async () => {
+    outroAparelhoEnvia('gastos_rotineiros', gasto('g1'));
+    await salvarInterno('_conexao', { url: 'https://exemplo/exec', token: TOKEN_COLAB });
+    await salvar('gastos_rotineiros', gasto('g2') as never);
+    await salvar('categorias', item('c1', 'Mercado'));
+    await sincronizar();
+
+    expect(await lerConfig()).toMatchObject({ pessoa_id: 'pes-2', papel_servidor: 'Colaborador' });
+    expect(await listarTodos('gastos_rotineiros')).toEqual([]); // nem o g1 do servidor, nem o g2 local
+    expect(tabelas.gastos_rotineiros.linhas().map((l: string[]) => l[0])).toEqual(['g1']); // g2 recusado
+    expect(tabelas.categorias.linhas().map((l: string[]) => l[0])).toEqual(['c1']);
+    expect(await listarFila()).toEqual([]);
+    expect(lerEstadoSync().status).toBe('sincronizado');
   });
 });

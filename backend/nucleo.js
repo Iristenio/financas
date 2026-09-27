@@ -5,7 +5,15 @@
 // A última coluna (_recebido_em) marca quando o servidor recebeu a versão — é o que
 // permite a cada aparelho baixar "só o que mudou desde a última vez".
 
-var VERSAO_API = 1;
+var VERSAO_API = 2;
+
+/** Entidades que o Colaborador não recebe nem pode gravar (P2). */
+var ENTIDADES_ADMIN = ['gastos_rotineiros', 'fontes', 'entradas', 'carteira_config'];
+
+/** O Colaborador pode ver/gravar esta entidade? */
+function permitido(usuario, entidade) {
+  return !usuario || usuario.papel === 'Admin' || ENTIDADES_ADMIN.indexOf(entidade) < 0;
+}
 
 // Tipos: s = texto, s? = texto ou vazio (null), n = número, n? = número ou vazio (null),
 // b = sim/não, j = lista/objeto (JSON)
@@ -89,7 +97,7 @@ function linhaParaRegistro(entidade, linha) {
  * tabelas[entidade] = { linhas(): valores[][] (sem cabeçalho), atualizar(i, valores), anexar(valores) }
  * Regra: uma versão mais antiga (atualizado_em menor) nunca sobrescreve uma mais nova.
  */
-function aplicarOperacoes(tabelas, operacoes, agora) {
+function aplicarOperacoes(tabelas, operacoes, agora, usuario) {
   var indices = {};
   var resultados = [];
   var log = [];
@@ -98,6 +106,12 @@ function aplicarOperacoes(tabelas, operacoes, agora) {
     var r = { id: op.id, ok: true };
     try {
       if (!ESQUEMA[op.entidade]) throw new Error('Entidade desconhecida: ' + op.entidade);
+      if (!permitido(usuario, op.entidade)) {
+        // Recusado sem travar a fila do aparelho: a alteração é descartada e fica registrada no LOG.
+        r.ignorado = true;
+        r.recusado = true;
+        throw null;
+      }
       var reg = op.payload;
       if (!reg || reg.id !== op.registro_id) throw new Error('Registro inválido');
       var tabela = tabelas[op.entidade];
@@ -121,20 +135,24 @@ function aplicarOperacoes(tabelas, operacoes, agora) {
         indices[op.entidade][reg.id] = tabela.linhas().length - 1;
       }
     } catch (e) {
-      r.ok = false;
-      r.erro = String(e && e.message ? e.message : e);
+      if (e !== null) {
+        r.ok = false;
+        r.erro = String(e && e.message ? e.message : e);
+      }
     }
     resultados.push(r);
-    log.push([agora, op.entidade, op.registro_id, op.operacao, r.ok ? (r.ignorado ? 'ignorado' : 'ok') : 'erro', r.erro || '']);
+    var situacao = !r.ok ? 'erro' : r.recusado ? 'recusado' : r.ignorado ? 'ignorado' : 'ok';
+    log.push([agora, op.entidade, op.registro_id, op.operacao, situacao, r.erro || (usuario ? usuario.nome || '' : '')]);
   });
 
   return { resultados: resultados, log: log };
 }
 
 /** Registros recebidos pelo servidor depois do cursor (todos, se cursor vazio). */
-function alteracoesDesde(tabelas, cursor) {
+function alteracoesDesde(tabelas, cursor, usuario) {
   var dados = {};
   Object.keys(ESQUEMA).forEach(function (entidade) {
+    if (!permitido(usuario, entidade)) return;
     var col = ESQUEMA[entidade].campos.length; // coluna _recebido_em
     dados[entidade] = tabelas[entidade]
       .linhas()
@@ -144,17 +162,22 @@ function alteracoesDesde(tabelas, cursor) {
   return dados;
 }
 
-/** Processa uma requisição já autenticada. */
-function processar(tabelas, req, agora) {
-  if (req.acao === 'ping') return { ok: true, versao: VERSAO_API, agora: agora };
+/**
+ * Processa uma requisição já autenticada.
+ * usuario = { nome, pessoa_id, papel } de quem é dono do token (sem usuario = acesso completo, usado nos testes).
+ */
+function processar(tabelas, req, agora, usuario) {
+  var quem = usuario ? { pessoa_id: usuario.pessoa_id, papel: usuario.papel } : null;
+  if (req.acao === 'ping') return { ok: true, versao: VERSAO_API, agora: agora, usuario: quem };
   if (req.acao === 'sincronizar') {
-    var aplicado = aplicarOperacoes(tabelas, req.operacoes || [], agora);
+    var aplicado = aplicarOperacoes(tabelas, req.operacoes || [], agora, usuario);
     return {
       ok: true,
       versao: VERSAO_API,
+      usuario: quem,
       resultados: aplicado.resultados,
       log: aplicado.log,
-      dados: alteracoesDesde(tabelas, req.cursor || null),
+      dados: alteracoesDesde(tabelas, req.cursor || null, usuario),
       cursor: agora,
     };
   }
@@ -175,6 +198,7 @@ if (typeof module !== 'undefined') {
   module.exports = {
     VERSAO_API: VERSAO_API,
     ESQUEMA: ESQUEMA,
+    ENTIDADES_ADMIN: ENTIDADES_ADMIN,
     cabecalho: cabecalho,
     registroParaLinha: registroParaLinha,
     linhaParaRegistro: linhaParaRegistro,

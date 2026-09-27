@@ -139,8 +139,11 @@ export interface ItemFila {
 export interface Config {
   /** Quem usa este aparelho (define o papel e a pessoa padrão nos formulários). */
   pessoa_id: Id | null;
+  /** Papel informado pelo servidor (dono do código de conexão). Quando existe, manda no acesso. */
+  papel_servidor: Papel | null;
 }
 
 export const CONFIG_PADRAO: Config = {
   pessoa_id: null,
+  papel_servidor: null,
 };

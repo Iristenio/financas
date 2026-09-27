@@ -3,14 +3,17 @@
 // Um ciclo = uma ou mais chamadas "sincronizar" ao backend. Cada chamada:
 //   1) envia um lote da fila local (até 50 alterações);
 //   2) recebe tudo o que o servidor recebeu depois do último cursor (de qualquer aparelho).
-import type { Entidade, ItemFila, Registro } from '../dominio/tipos';
+import { ENTIDADES_ADMIN, type Entidade, type ItemFila, type Papel, type Registro } from '../dominio/tipos';
 import {
   aoGravarLocal,
   aplicarRemotos,
   confirmarEnvio,
+  lerConfig,
   lerInterno,
+  limparEntidades,
   listarFila,
   registrarFalhas,
+  salvarConfig,
   salvarInterno,
 } from '../dados/repositorio';
 
@@ -94,6 +97,17 @@ interface RespostaSync {
   cursor?: string;
   planilha?: string;
   versao?: number;
+  /** Dono do código de conexão (o servidor decide a pessoa e o papel). */
+  usuario?: { pessoa_id: string; papel: Papel } | null;
+}
+
+/** Guarda quem o servidor diz que é o dono do código. O Colaborador não fica com dados só do Admin. */
+async function aplicarUsuario(usuario: RespostaSync['usuario']) {
+  if (!usuario) return;
+  const config = await lerConfig();
+  if (config.pessoa_id === usuario.pessoa_id && config.papel_servidor === usuario.papel) return;
+  await salvarConfig({ pessoa_id: usuario.pessoa_id, papel_servidor: usuario.papel });
+  if (usuario.papel !== 'Admin') await limparEntidades(ENTIDADES_ADMIN);
 }
 
 const esperar = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
@@ -155,6 +169,7 @@ export async function conectar(codigo: string): Promise<void> {
     throw new ErroApi('Este código aponta para o endereço de teste do Apps Script (/dev), que exige login. Execute configurar() de novo para gerar um código com o endereço público.');
   }
   const r = await chamar(conexao, { acao: 'ping' });
+  await aplicarUsuario(r.usuario);
   await salvarInterno('_conexao', { ...conexao, planilha: r.planilha });
   await salvarInterno('_cursor', undefined);
   definir({ planilha: r.planilha ?? null, erro: null });
@@ -164,6 +179,7 @@ export async function conectar(codigo: string): Promise<void> {
 export async function desconectar() {
   await salvarInterno('_conexao', undefined);
   await salvarInterno('_cursor', undefined);
+  await salvarConfig({ papel_servidor: null });
   definir({ planilha: null, erro: null });
   await atualizarStatus();
 }
@@ -236,6 +252,7 @@ async function ciclo() {
         operacoes: lote.map((i) => ({ id: i.id, entidade: i.entidade, registro_id: i.registro_id, operacao: i.operacao, payload: i.payload })),
       });
 
+      await aplicarUsuario(r.usuario);
       const porId = new Map(lote.map((i) => [i.id, i]));
       const sucessos: ItemFila[] = [];
       const falhas: { item: ItemFila; erro: string }[] = [];

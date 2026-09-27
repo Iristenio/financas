@@ -1,6 +1,6 @@
 // Configuração inicial — execute a função configurar() no editor do Apps Script
 // (na primeira vez e sempre que acrescentar uma entidade nova no ESQUEMA).
-// Cria (ou reaproveita) a planilha, prepara as abas e mostra o código de conexão do app.
+// Cria (ou reaproveita) a planilha, prepara as abas e mostra o código de conexão de cada pessoa.
 
 /**
  * ► PREENCHA com o endereço público da implantação (termina em /exec).
@@ -9,6 +9,12 @@
  */
 var URL_PUBLICA = '';
 var NOME_PLANILHA = 'Finanças - dados';
+
+/** Quem pode sincronizar: cada um recebe seu código. pessoa_id = id da pessoa no app (Cadastros → Pessoas). */
+var USUARIOS = [
+  { nome: 'Iristenio', pessoa_id: 'pes-1', papel: 'Admin' },
+  { nome: 'Paulo', pessoa_id: 'pes-2', papel: 'Colaborador' },
+];
 
 function configurar() {
   var props = PropertiesService.getScriptProperties();
@@ -31,28 +37,36 @@ function configurar() {
   var padrao = planilha.getSheetByName('Página1') || planilha.getSheetByName('Sheet1');
   if (padrao && planilha.getSheets().length > 1) planilha.deleteSheet(padrao);
 
-  // 3. Token secreto
-  var token = props.getProperty(PROP_TOKEN);
-  if (!token) {
-    token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
-    props.setProperty(PROP_TOKEN, token);
-  }
+  // 3. Um token secreto por pessoa (mantém os que já existem)
+  var tokens = JSON.parse(props.getProperty(PROP_TOKENS) || '{}');
+  USUARIOS.forEach(function (u) {
+    var atual = Object.keys(tokens).filter(function (t) { return tokens[t].pessoa_id === u.pessoa_id; })[0];
+    if (atual) delete tokens[atual];
+    tokens[atual || novoToken()] = u; // atualiza nome/papel se mudaram em USUARIOS
+  });
+  props.setProperty(PROP_TOKENS, JSON.stringify(tokens));
 
-  // 4. Código de conexão
+  // 4. Códigos de conexão (um por pessoa)
   Logger.log('Planilha: ' + planilha.getUrl());
   if (!URL_PUBLICA) {
     Logger.log('⚠️ Preencha URL_PUBLICA em configurar.js (endereço /exec da implantação) e execute de novo.');
     return;
   }
-  var codigo = 'APP1:' + Utilities.base64EncodeWebSafe(JSON.stringify({ u: URL_PUBLICA, t: token }));
-  Logger.log('================ CÓDIGO DE CONEXÃO ================');
-  Logger.log(codigo);
-  Logger.log('Copie a linha acima e cole em Ajustes → Sincronização, no app.');
+  Object.keys(tokens).forEach(function (t) {
+    var u = tokens[t];
+    Logger.log('================ CÓDIGO DE ' + u.nome.toUpperCase() + ' (' + u.papel + ') ================');
+    Logger.log('APP1:' + Utilities.base64EncodeWebSafe(JSON.stringify({ u: URL_PUBLICA, t: t })));
+  });
+  Logger.log('Cada pessoa cola o SEU código no app, em Ajustes → Sincronização.');
 }
 
-/** Gera um novo token (use se desconfiar que o antigo vazou). Os aparelhos precisarão do novo código. */
-function trocarToken() {
-  PropertiesService.getScriptProperties().deleteProperty(PROP_TOKEN);
+function novoToken() {
+  return Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+}
+
+/** Gera tokens novos para todos (use se desconfiar que algum vazou). Os aparelhos precisarão dos novos códigos. */
+function trocarTokens() {
+  PropertiesService.getScriptProperties().deleteProperty(PROP_TOKENS);
   configurar();
 }
 

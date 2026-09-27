@@ -1,8 +1,9 @@
 // API do app (Google Apps Script, publicada como "App da Web").
-// Toda requisição precisa do token secreto gerado em configurar().
+// Toda requisição precisa de um token secreto — um por pessoa, gerados em configurar().
+// O token diz quem está sincronizando e com qual papel (Admin ou Colaborador).
 
 var PROP_PLANILHA = 'PLANILHA_ID';
-var PROP_TOKEN = 'TOKEN';
+var PROP_TOKENS = 'TOKENS'; // JSON { token: { nome, pessoa_id, papel } }
 var ABA_LOG = 'LOG_SYNC';
 var MAX_LINHAS_LOG = 3000;
 
@@ -14,8 +15,8 @@ function doPost(e) {
   var resposta;
   try {
     var req = JSON.parse(e.postData.contents);
-    var token = PropertiesService.getScriptProperties().getProperty(PROP_TOKEN);
-    if (!token || req.token !== token) {
+    var usuario = identificar(req.token);
+    if (!usuario) {
       resposta = { ok: false, erro: 'Token inválido', codigo: 401 };
     } else {
       var trava = LockService.getScriptLock();
@@ -23,7 +24,7 @@ function doPost(e) {
       try {
         var planilha = abrirPlanilha();
         var tabelas = tabelasDaPlanilha(planilha);
-        resposta = processar(tabelas, req, new Date().toISOString());
+        resposta = processar(tabelas, req, new Date().toISOString(), usuario);
         if (resposta.log && resposta.log.length) registrarLog(planilha, resposta.log);
         delete resposta.log;
         if (req.acao === 'ping') resposta.planilha = planilha.getUrl();
@@ -35,6 +36,13 @@ function doPost(e) {
     resposta = { ok: false, erro: String(erro && erro.message ? erro.message : erro) };
   }
   return ContentService.createTextOutput(JSON.stringify(resposta)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Dono do token (ou null se o token não existe). */
+function identificar(token) {
+  if (!token) return null;
+  var tokens = JSON.parse(PropertiesService.getScriptProperties().getProperty(PROP_TOKENS) || '{}');
+  return tokens[token] || null;
 }
 
 function abrirPlanilha() {

@@ -3,8 +3,10 @@
 Opcional: sem ele, o app funciona só no aparelho.
 
 - `nucleo.js` — regras do servidor (sem APIs do Google); também usado nos testes do app.
-- `api.js` — `doPost` (sincronização por token) e acesso às abas.
-- `configurar.js` — `configurar()`: cria a planilha, as abas e mostra o **código de conexão**.
+- `api.js` — `doPost` (sincronização; o token diz quem é a pessoa e o papel) e acesso às abas.
+- `configurar.js` — `configurar()`: cria a planilha, as abas e mostra **um código de conexão por pessoa**
+  (lista `USUARIOS`). O Colaborador não recebe nem grava `gastos_rotineiros`, `fontes`, `entradas` e
+  `carteira_config` (regra no servidor, em `nucleo.js`).
 
 ## Primeira configuração (uma vez por projeto)
 
@@ -24,7 +26,8 @@ Opcional: sem ele, o app funciona só no aparelho.
    `var URL_PUBLICA = 'https://script.google.com/macros/s/<ID>/exec';` → `clasp push --force` de novo.
 5. No editor do Apps Script: escolha **configurar** → **Executar** → autorize
    (Avançado → Acessar… → Permitir).
-6. Copie a linha `APP1:…` do registro de execução e cole no app em **Ajustes → Sincronização**.
+6. O registro de execução mostra um código `APP1:…` para cada pessoa. Cada uma cola **o seu** no app,
+   em **Ajustes → Sincronização**.
 
 ## Atualizar o código depois
 
@@ -36,4 +39,4 @@ npx @google/clasp update-deployment <ID_DA_IMPLANTACAO> --description "..."
 `update-deployment` mantém o mesmo endereço (os aparelhos não precisam reconectar).
 Se acrescentar escopos em `appsscript.json`: push → executar `configurar()` e autorizar → só então update-deployment.
 
-Se desconfiar que o código vazou, execute `trocarToken()` e reconecte os aparelhos.
+Se desconfiar que um código vazou, execute `trocarTokens()` (gera códigos novos para todos) e reconecte os aparelhos.
