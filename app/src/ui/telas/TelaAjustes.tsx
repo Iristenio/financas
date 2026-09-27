@@ -162,6 +162,12 @@ function CartaoPreferencias() {
           </select>
         </label>
       </div>
+      {pessoas.length === 0 && (
+        <p class="erros" role="status">
+          Ainda não há pessoas neste aparelho. Use <strong>Importar do app antigo</strong> (logo abaixo) ou cadastre as pessoas
+          em Cadastros → Pessoas (tipo Membro do Domicílio). Depois volte aqui e escolha quem usa o aparelho.
+        </p>
+      )}
       <p class="dica">
         Define o nome que já vem preenchido nos formulários e o acesso deste aparelho (agora: <strong>{papel}</strong>). O
         Colaborador não vê Gastos nem Carteira. Quando a sincronização com o Google for ligada, isso passa a vir do código de
@@ -221,6 +227,9 @@ function CartaoImportar() {
         <p class="dica">
           Copia para este aparelho os cadastros, contas, parcelas e gastos do app atual (Projeto Finanças). Só lê o app antigo —
           nada é alterado nele. Pode repetir quantas vezes quiser: cada importação substitui a anterior.
+        </p>
+        <p class="dica">
+          Leva cerca de <strong>2 minutos</strong>. Mantenha o app aberto e a tela ligada até aparecer “Importado: …”.
         </p>
         <label class="campo-rotulo">
           <span>Token de acesso do app antigo (Admin)</span>

@@ -13,16 +13,23 @@ export const ENTIDADES_IMPORTADAS: readonly Entidade[] = ['categorias', 'meios_p
 async function lerApi<T>(token: string, recurso: string, params: Record<string, string> = {}): Promise<T> {
   const q = new URLSearchParams({ token, recurso, ...params });
   let ultimoErro = '';
-  for (let tentativa = 1; tentativa <= 3; tentativa++) {
+  for (let tentativa = 1; tentativa <= 4; tentativa++) {
     try {
       const r = await fetch(`${URL_APP_ANTIGO}?${q}`, { credentials: 'omit' });
-      const json = await r.json();
+      const texto = await r.text();
+      let json: { ok?: boolean; erro?: string; dados?: unknown };
+      try {
+        json = JSON.parse(texto);
+      } catch {
+        // O Google às vezes devolve uma página de erro (servidor ocupado) em vez dos dados.
+        throw new Error('o Google não respondeu direito (servidor ocupado). Tente de novo em alguns minutos.');
+      }
       if (!json.ok) throw new Error(json.erro || 'erro no app antigo');
       return json.dados as T;
     } catch (e) {
       ultimoErro = e instanceof Error ? e.message : String(e);
       if (/token|acesso/i.test(ultimoErro)) break;
-      await new Promise((ok) => setTimeout(ok, 1200 * tentativa));
+      await new Promise((ok) => setTimeout(ok, 2000 * tentativa));
     }
   }
   throw new Error(ultimoErro);
