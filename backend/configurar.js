@@ -7,7 +7,7 @@
  *   Obtenha com: npx @google/clasp list-deployments  → https://script.google.com/macros/s/<ID>/exec
  *   (ScriptApp.getService().getUrl() no editor devolve o endereço de TESTE /dev, que exige login.)
  */
-var URL_PUBLICA = '';
+var URL_PUBLICA = 'https://script.google.com/macros/s/AKfycbwgfSFhhu2wjMhRuRiUSBzGTg5PMdG2me0W_ckKhwE4m73LsWr5io1xWO3Oyq2olAbYCw/exec';
 var NOME_PLANILHA = 'Finanças - dados';
 
 /** Quem pode sincronizar: cada um recebe seu código. pessoa_id = id da pessoa no app (Cadastros → Pessoas). */
