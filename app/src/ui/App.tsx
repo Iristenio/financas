@@ -19,34 +19,21 @@ import { TelaLancamentos } from './telas/TelaLancamentos';
 import { TelaPagar } from './telas/TelaPagar';
 import { TelaMonitoramento } from './telas/TelaMonitoramento';
 import { TelaRecorrentes } from './telas/TelaRecorrentes';
-import { IconeEtiqueta, IconeLista } from './icones';
-
-function EmBreve({ titulo, etapa }: { titulo: string; etapa: number }) {
-  return (
-    <>
-      <header class="cabecalho">
-        <h1>{titulo}</h1>
-      </header>
-      <div class="conteudo">
-        <div class="vazio grande">
-          <IconeEtiqueta />
-          <strong>Em construção</strong>
-          Esta tela chega na etapa {etapa} do plano.
-        </div>
-      </div>
-    </>
-  );
-}
+import { TelaGastos } from './telas/TelaGastos';
+import { ResumoAdmin, TelaCarteira } from './telas/TelaCarteira';
+import { FormGasto } from './paineis/FormGasto';
+import { FormEntrada } from './paineis/FormEntrada';
+import { IconeEntrada, IconeEtiqueta, IconeLista, IconeRecibo } from './icones';
 
 /** ► Nova tela: acrescente aqui (e em TELAS/MENU, em rotas.ts). */
 const TELA: Record<Tela, () => JSX.Element> = {
-  inicio: () => <TelaInicio />,
+  inicio: () => <TelaInicio extrasAdmin={<ResumoAdmin />} />,
   lancamentos: TelaLancamentos,
   pagar: TelaPagar,
   monitoramento: TelaMonitoramento,
   recorrentes: TelaRecorrentes,
-  gastos: () => <EmBreve titulo="Gastos" etapa={5} />,
-  carteira: () => <EmBreve titulo="Carteira" etapa={5} />,
+  gastos: TelaGastos,
+  carteira: TelaCarteira,
   cadastros: TelaCadastros,
   config: TelaAjustes,
 };
@@ -85,10 +72,12 @@ function ConteudoPainel({ painel }: { painel: Painel }) {
       return <FormFonte id={painel.id} />;
     case 'nova-conta':
       return <FormNovaConta />;
+    case 'gasto':
+      return <FormGasto id={painel.id} />;
+    case 'entrada':
+      return <FormEntrada id={painel.id} />;
     case 'conta':
       return <DetalheConta key={`${painel.id}-${painel.modo ?? 'ver'}`} id={painel.id} modo={painel.modo} />;
-    default:
-      return <p class="dica">Em construção.</p>;
   }
 }
 
@@ -105,21 +94,27 @@ function Estrutura() {
 
   /** Opções do botão "+" em cada tela (com uma só, ele cria direto). */
   const novaConta: OpcaoNovo = { rotulo: 'Nova conta', Icone: IconeLista, acao: () => abrirPainel({ tipo: 'nova-conta' }) };
-  const opcoesNovo: OpcaoNovo[] =
-    tela === 'inicio' || tela === 'lancamentos' || tela === 'pagar' || tela === 'monitoramento' || tela === 'recorrentes'
-      ? [novaConta]
-      : tela === 'cadastros'
-      ? [
-          {
-            rotulo: 'Novo cadastro',
-            Icone: IconeEtiqueta,
-            acao: () => {
-              const aba = lerAbaCadastro();
-              abrirPainel({ tipo: aba === 'categorias' ? 'categoria' : aba === 'meios' ? 'meio' : 'pessoa' });
-            },
-          },
-        ]
-      : [];
+  const novoGasto: OpcaoNovo = { rotulo: 'Novo gasto', Icone: IconeRecibo, acao: () => abrirPainel({ tipo: 'gasto' }) };
+  const novaEntrada: OpcaoNovo = { rotulo: 'Nova entrada', Icone: IconeEntrada, acao: () => abrirPainel({ tipo: 'entrada' }) };
+  const novoCadastro: OpcaoNovo = {
+    rotulo: 'Novo cadastro',
+    Icone: IconeEtiqueta,
+    acao: () => {
+      const aba = lerAbaCadastro();
+      abrirPainel({ tipo: aba === 'categorias' ? 'categoria' : aba === 'meios' ? 'meio' : 'pessoa' });
+    },
+  };
+  const opcoesPorTela: Partial<Record<Tela, OpcaoNovo[]>> = {
+    inicio: ehAdmin ? [novaConta, novoGasto, novaEntrada] : [novaConta],
+    lancamentos: [novaConta],
+    pagar: [novaConta],
+    monitoramento: [novaConta],
+    recorrentes: [novaConta],
+    gastos: [novoGasto],
+    carteira: [novaEntrada],
+    cadastros: [novoCadastro],
+  };
+  const opcoesNovo = opcoesPorTela[tela] ?? [];
 
   return (
     <div class="estrutura">
