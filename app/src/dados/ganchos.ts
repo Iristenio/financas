@@ -20,8 +20,19 @@ export function useConsulta<T>(consulta: () => Promise<T>, inicial: T, deps: unk
   return valor;
 }
 
+/** Última lista lida de cada entidade: uma tela que abre começa com ela (e não vazia) até a leitura nova chegar. */
+const ultimaLeitura = new Map<Entidade, unknown[]>();
+
 export function useEntidade<E extends Entidade>(entidade: E): MapaEntidades[E][] {
-  return useConsulta(() => listarTodos(entidade), [] as MapaEntidades[E][], [entidade]);
+  return useConsulta(
+    async () => {
+      const lista = await listarTodos(entidade);
+      ultimaLeitura.set(entidade, lista);
+      return lista;
+    },
+    (ultimaLeitura.get(entidade) ?? []) as MapaEntidades[E][],
+    [entidade],
+  );
 }
 
 export function useConfig(): Config {

@@ -21,7 +21,7 @@ import type { Alteracao } from '../../dados/repositorio';
 import { useEntidade } from '../../dados/ganchos';
 import { gravarComDesfazer } from '../acoes/registros';
 import { useEstado, type ModoConta } from '../estado';
-import { useContas, useNomes } from '../dados';
+import { useContas, useNomes, type Contas } from '../dados';
 import { CampoValor, SeletorCadastro } from '../componentes/Campos';
 import { EditorRateio, novaLinha, rateioBate, type LinhaEdicao } from '../componentes/EditorRateio';
 
@@ -33,21 +33,22 @@ export function DetalheConta({ id, modo = 'ver' }: { id: string; modo?: ModoCont
   if (!lanc) return <p class="dica">Esta conta não existe mais (foi excluída).</p>;
   switch (modo) {
     case 'editar':
-      return <EditarConta id={id} />;
+      return <EditarConta id={id} contas={contas} />;
     case 'ajustar':
-      return <AjustarValor id={id} />;
+      return <AjustarValor id={id} contas={contas} />;
     case 'antecipar':
-      return <Antecipar id={id} />;
+      return <Antecipar id={id} contas={contas} />;
     default:
-      return <VerConta id={id} />;
+      return <VerConta id={id} contas={contas} />;
   }
 }
 
-/* ---------------- Ver ---------------- */
+/* ---------------- Ver ----------------
+ * As telas internas recebem `contas` do DetalheConta (que já conferiu que a conta existe):
+ * um useContas() próprio começaria vazio e quebraria o desenho por um instante. */
 
-function VerConta({ id }: { id: string }) {
+function VerConta({ id, contas }: { id: string; contas: Contas }) {
   const { abrirPainel, fecharPainel, avisar, perguntar } = useEstado();
-  const contas = useContas();
   const nomes = useNomes();
   const lanc = contas.porId.get(id)!;
   const parcelas = contas.parcelas.get(id) ?? [];
@@ -190,9 +191,8 @@ function Erros({ erros }: { erros: string[] }) {
 
 /* ---------------- Editar (R6) ---------------- */
 
-function EditarConta({ id }: { id: string }) {
+function EditarConta({ id, contas }: { id: string; contas: Contas }) {
   const { abrirPainel, avisar } = useEstado();
-  const contas = useContas();
   const lanc = contas.porId.get(id)!;
   const parcelas = contas.parcelas.get(id) ?? [];
   const rateios = contas.rateios.get(id) ?? [];
@@ -259,9 +259,8 @@ function EditarConta({ id }: { id: string }) {
 
 /* ---------------- Ajustar valor (R7) ---------------- */
 
-function AjustarValor({ id }: { id: string }) {
+function AjustarValor({ id, contas }: { id: string; contas: Contas }) {
   const { abrirPainel, avisar } = useEstado();
-  const contas = useContas();
   const parcelas = contas.parcelas.get(id) ?? [];
   const abertas = parcelas.filter((p) => p.status === 'Aberto');
   const [numero, setNumero] = useState(String(abertas[0]?.numero ?? ''));
@@ -333,9 +332,8 @@ function AjustarValor({ id }: { id: string }) {
 
 /* ---------------- Antecipar (R8) ---------------- */
 
-function Antecipar({ id }: { id: string }) {
+function Antecipar({ id, contas }: { id: string; contas: Contas }) {
   const { abrirPainel, avisar } = useEstado();
-  const contas = useContas();
   const lanc = contas.porId.get(id)!;
   const parcelas = contas.parcelas.get(id) ?? [];
   const abertas = parcelas.filter((p) => p.status === 'Aberto');

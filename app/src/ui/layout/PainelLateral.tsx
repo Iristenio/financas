@@ -1,11 +1,28 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useErrorBoundary } from 'preact/hooks';
 import { IconeFechar } from '../icones';
 
 interface Props {
   titulo: string;
   aoFechar: () => void;
   children: ComponentChildren;
+}
+
+/** Se o conteúdo do painel falhar ao desenhar, mostra um aviso em vez de travar o app inteiro. */
+function ProtecaoErro({ children }: { children: ComponentChildren }) {
+  const [erro, tentarDeNovo] = useErrorBoundary((e) => console.error('Erro no painel:', e));
+  if (erro)
+    return (
+      <div class="formulario">
+        <p class="erros" role="alert">Não foi possível mostrar isto agora.</p>
+        <div class="linha">
+          <button type="button" class="botao" onClick={tentarDeNovo}>
+            Tentar de novo
+          </button>
+        </div>
+      </div>
+    );
+  return <>{children}</>;
 }
 
 /** Painel que abre pela direita, sem esconder a área principal (em paisagem). */
@@ -24,7 +41,9 @@ export function PainelLateral({ titulo, aoFechar, children }: Props) {
           <IconeFechar />
         </button>
       </div>
-      <div class="painel-corpo">{children}</div>
+      <div class="painel-corpo">
+        <ProtecaoErro key={titulo}>{children}</ProtecaoErro>
+      </div>
     </aside>
   );
 }
