@@ -248,8 +248,10 @@ html.so-pc .botao.pequeno, .com-pc .botao.pequeno { min-height: 34px; }
 .botao svg { width: 20px; height: 20px; }
 
 .mais-filtros { display: none; }
+.limpar-filtros { align-self: flex-end; min-height: 44px; }
 @media (max-width: 899px) {
   .mais-filtros { display: inline-flex; grid-column: 1 / -1; justify-self: start; }
+  .limpar-filtros { grid-column: 1 / -1; justify-self: start; }
   .filtros:not(.abertos) .filtro.extra { display: none; }
 }
 
@@ -335,9 +337,6 @@ html.so-pc .botao.pequeno, .com-pc .botao.pequeno { min-height: 34px; }
 .renovar .campo { min-height: 44px; }
 
 /* ============ Progresso (importação) ============ */
-.progresso { position: relative; border-radius: 10px; background: var(--superficie-2); overflow: hidden; min-height: 40px; display: flex; align-items: center; padding: 0 14px; }
-.progresso-barra { position: absolute; inset: 0 auto 0 0; background: var(--primaria-suave); transition: width 0.3s; }
-.progresso span { position: relative; font-size: 14px; }
 
 /* ============ Gastos / Carteira ============ */
 .valor-grande .campo { font-size: 26px; font-weight: 700; text-align: center; min-height: 60px; }
@@ -346,3 +345,4 @@ html.so-pc .botao.pequeno, .com-pc .botao.pequeno { min-height: 34px; }
 .icone-inline { width: 16px; height: 16px; vertical-align: -3px; color: var(--primaria); }
 .link-esquerda { margin: -8px 0 0; text-align: left; }
 .carteira-inicio { max-width: 640px; }
+.secao-movimentos .secao-titulo { margin-top: 22px; }

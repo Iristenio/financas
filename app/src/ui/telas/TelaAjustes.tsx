@@ -6,7 +6,6 @@ import { useConfig, useEntidade } from '../../dados/ganchos';
 import { paraEscolha } from '../../dominio/cadastros';
 import { usePerfil } from '../perfil';
 import { lerTema, salvarTema, type Tema } from '../tema';
-import { importarDoAppAntigo, type ResultadoImportacao } from '../acoes/importar';
 import { baixarTudo, conectar, desconectar, ErroApi, sincronizar } from '../../sync/motor';
 import { APP } from '../../app.config';
 import { descreverUltimaSync, ROTULO_STATUS, useSync } from '../../sync/ganchos';
@@ -22,7 +21,6 @@ export function TelaAjustes() {
         <CartaoGoogle />
         <CartaoPreferencias />
         <CartaoAparencia />
-        <CartaoImportar />
         <CartaoAparelho />
       </div>
     </>
@@ -195,8 +193,8 @@ function CartaoPreferencias() {
       </div>
       {pessoas.length === 0 && (
         <p class="erros" role="status">
-          Ainda não há pessoas neste aparelho. Use <strong>Importar do app antigo</strong> (logo abaixo) ou cadastre as pessoas
-          em Cadastros → Pessoas (tipo Membro do Domicílio). Depois volte aqui e escolha quem usa o aparelho.
+          Ainda não há pessoas neste aparelho. Conecte à planilha (cartão acima) para trazer os dados, ou cadastre as
+          pessoas em Cadastros → Pessoas (tipo Membro do Domicílio). Depois volte aqui e escolha quem usa o aparelho.
         </p>
       )}
       <p class="dica">
@@ -206,95 +204,6 @@ function CartaoPreferencias() {
           ? 'Como este aparelho está conectado à planilha, a pessoa vem do código de conexão e não pode ser trocada aqui.'
           : 'Quando a sincronização for ligada, isso passa a vir do código de conexão de cada pessoa.'}
       </p>
-    </section>
-  );
-}
-
-/* ---------------- Importar do app antigo ---------------- */
-
-const ROTULOS_IMPORTACAO: Record<string, string> = {
-  categorias: 'categorias',
-  meios_pagamento: 'meios de pagamento',
-  pessoas: 'pessoas',
-  lancamentos: 'contas',
-  rateios: 'linhas de rateio',
-  parcelas: 'parcelas',
-  gastos_rotineiros: 'gastos do dia a dia',
-};
-
-function CartaoImportar() {
-  const { ehAdmin } = usePerfil();
-  const { perguntar, avisar } = useEstado();
-  const [token, setToken] = useState('');
-  const [progresso, setProgresso] = useState<{ texto: string; fracao: number } | null>(null);
-  const [erro, setErro] = useState('');
-  const [resultado, setResultado] = useState<ResultadoImportacao | null>(null);
-  if (!ehAdmin) return null;
-
-  async function importar(e: Event) {
-    e.preventDefault();
-    const r = await perguntar(
-      'Importar os dados do app antigo?',
-      [{ valor: 'sim', rotulo: 'Importar', estilo: 'primario' }],
-      'Os cadastros, contas, parcelas e gastos DESTE APARELHO serão substituídos pelos do app antigo. O app antigo não é alterado. A Carteira não é tocada.',
-    );
-    if (!r) return;
-    setErro('');
-    setResultado(null);
-    try {
-      const res = await importarDoAppAntigo(token, (texto, fracao) => setProgresso({ texto, fracao }));
-      setResultado(res);
-      setToken('');
-      avisar({ texto: 'Dados do app antigo importados' });
-    } catch (x) {
-      setErro(`Não foi possível importar: ${x instanceof Error ? x.message : String(x)}`);
-    } finally {
-      setProgresso(null);
-    }
-  }
-
-  return (
-    <section class="cartao">
-      <h2>Importar do app antigo</h2>
-      <form class="formulario" onSubmit={importar}>
-        <p class="dica">
-          Copia para este aparelho os cadastros, contas, parcelas e gastos do app atual (Projeto Finanças). Só lê o app antigo —
-          nada é alterado nele. Pode repetir quantas vezes quiser: cada importação substitui a anterior.
-        </p>
-        <p class="dica">
-          Leva cerca de <strong>2 minutos</strong>. Mantenha o app aberto e a tela ligada até aparecer “Importado: …”.
-        </p>
-        <label class="campo-rotulo">
-          <span>Token de acesso do app antigo (Admin)</span>
-          <input class="campo" type="password" autoComplete="off" value={token} onInput={(e) => setToken(e.currentTarget.value)} />
-        </label>
-        {progresso && (
-          <div class="progresso">
-            <div class="progresso-barra" style={{ width: `${Math.round(progresso.fracao * 100)}%` }} />
-            <span>{progresso.texto}</span>
-          </div>
-        )}
-        {erro && <p class="erros" role="alert">{erro}</p>}
-        {resultado && (
-          <div class="dica">
-            Importado:{' '}
-            {Object.entries(resultado.contagens)
-              .map(([k, n]) => `${n} ${ROTULOS_IMPORTACAO[k] ?? k}`)
-              .join(' · ')}
-            .
-            {resultado.avisos.length > 0 && (
-              <ul>
-                {resultado.avisos.map((a) => <li key={a}>{a}</li>)}
-              </ul>
-            )}
-          </div>
-        )}
-        <div class="linha">
-          <button type="submit" class="botao primario" disabled={!token.trim() || !!progresso}>
-            {progresso ? 'Importando…' : 'Importar'}
-          </button>
-        </div>
-      </form>
     </section>
   );
 }

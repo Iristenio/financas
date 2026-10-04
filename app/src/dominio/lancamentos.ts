@@ -191,11 +191,19 @@ export interface FiltroContas {
   pessoa_id: string;
 }
 
+/** Texto sem acentos e em minúsculas, para buscas ("mae" encontra "Mãe"). */
+const simplificar = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('pt-BR').trim();
+
+/** A descrição contém o termo buscado? (termo vazio = sim) */
+export function contemTexto(descricao: string, termo: string): boolean {
+  const t = simplificar(termo);
+  return !t || simplificar(descricao).includes(t);
+}
+
 export function filtrarContas(lancamentos: Lancamento[], parcelas: Map<Id, Parcela[]>, rateios: Map<Id, Rateio[]>, f: FiltroContas): Lancamento[] {
-  const termo = f.titulo.trim().toLocaleLowerCase('pt-BR');
   return lancamentos.filter((l) => {
     if (l.excluido) return false;
-    if (termo && !l.descricao.toLocaleLowerCase('pt-BR').includes(termo)) return false;
+    if (!contemTexto(l.descricao, f.titulo)) return false;
     if (f.categoria_id && l.categoria_id !== f.categoria_id) return false;
     if (f.meio_pagamento_id && l.meio_pagamento_id !== f.meio_pagamento_id) return false;
     if (f.pessoa_id && !(rateios.get(l.id) ?? []).some((r) => r.pessoa_id === f.pessoa_id)) return false;

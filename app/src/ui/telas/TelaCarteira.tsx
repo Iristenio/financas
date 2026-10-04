@@ -1,4 +1,5 @@
 // Carteira (C1–C9): saldo disponível, entradas e saídas do mês, fontes — só Admin.
+import type preact from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 import type { Entidade } from '../../dominio/tipos';
 import { ID_CARTEIRA } from '../../dominio/tipos';
@@ -12,9 +13,7 @@ import { useEntidade } from '../../dados/ganchos';
 import { gravarComDesfazer } from '../acoes/registros';
 import { useEstado } from '../estado';
 import { useContas, useNomes } from '../dados';
-import { CampoValor, SeletorMes } from '../componentes/Campos';
-import { buscar } from '../../dados/repositorio';
-import { ID_ENTRADA_SALDO_INICIAL } from '../../dominio/carteira';
+import { CampoValor, SeletorCadastro, SeletorMes } from '../componentes/Campos';
 import { gastosDoMes } from '../../dominio/gastos';
 import { somar } from '../../dominio/dinheiro';
 import { irPara } from '../rotas';
@@ -22,6 +21,7 @@ import { IconeRecibo } from '../icones';
 import { IconeCarteira } from '../icones';
 
 let mesSalvo = mesAtual();
+let fonteSalva = '';
 
 /** Movimentos e saldo, para a tela e para o Início. */
 export function useCarteira() {
@@ -83,35 +83,6 @@ function Iniciar() {
   );
 }
 
-function AlterarInicio({ atual }: { atual: string }) {
-  const { avisar } = useEstado();
-  const config = useEntidade('carteira_config').find((c) => c.id === ID_CARTEIRA);
-  const [data, setData] = useState(atual);
-
-  async function salvar() {
-    if (!config || !data) return;
-    const entrada = await buscar('entradas', ID_ENTRADA_SALDO_INICIAL);
-    const desfazer = await gravarComDesfazer([
-      { entidade: 'carteira_config', registro: { ...config, data_inicio: data } } as Alteracao,
-      ...(entrada ? [{ entidade: 'entradas', registro: { ...entrada, data } } as Alteracao] : []),
-    ]);
-    avisar({ texto: 'Início da carteira alterado', desfazer });
-  }
-
-  return (
-    <details class="bloco-dobra">
-      <summary>Alterar início</summary>
-      <div class="linha">
-        <input class="campo" type="date" value={data} onInput={(e) => setData(e.currentTarget.value)} />
-        <button class="botao" disabled={!data || data === atual} onClick={salvar}>
-          Salvar
-        </button>
-      </div>
-      <p class="dica">O saldo inicial passa a valer nessa data; nada antes dela conta. Para mudar o valor do saldo inicial, toque nele na lista de movimentos.</p>
-    </details>
-  );
-}
-
 /** Cartões do Início (só Admin): saldo da carteira e gastos do mês. */
 export function ResumoAdmin() {
   const { config, movimentos } = useCarteira();
@@ -144,6 +115,20 @@ function descrever(m: Movimento, nomes: ReturnType<typeof useNomes>, contas: Ret
   return { titulo: gastos.get(m.ref) || nomes.categoria(m.chave), detalhe: `gasto · ${nomes.categoria(m.chave)}` };
 }
 
+/** Lista de movimentos com título e total (Entradas ou Saídas). */
+function SecaoMovimentos(props: { titulo: string; movimentos: Movimento[]; vazio: string; linha: (m: Movimento) => preact.JSX.Element }) {
+  const total = somar(props.movimentos.map((m) => Math.abs(m.valor)));
+  return (
+    <section class="secao-movimentos">
+      <h2 class="secao-titulo">
+        <span>{props.titulo}</span>
+        {props.movimentos.length > 0 && <span class="num secao-total">{formatarMoeda(total)}</span>}
+      </h2>
+      {props.movimentos.length === 0 ? <p class="dica">{props.vazio}</p> : <ul class="lista compacta">{props.movimentos.map(props.linha)}</ul>}
+    </section>
+  );
+}
+
 export function TelaCarteira() {
   const { abrirPainel } = useEstado();
   const { config, movimentos } = useCarteira();
@@ -153,6 +138,7 @@ export function TelaCarteira() {
   const gastos = useEntidade('gastos_rotineiros');
   const entradas = useEntidade('entradas');
   const [mes, setMes] = useState(mesSalvo);
+  const [fonte, setFonte] = useState(fonteSalva);
   const nomeFonte = useMemo(() => new Map(fontes.map((f) => [f.id, f.nome])), [fontes]);
   const descGasto = useMemo(() => new Map(gastos.map((g) => [g.id, g.descricao])), [gastos]);
   const descEntrada = useMemo(() => new Map(entradas.map((e) => [e.id, e.descricao])), [entradas]);
@@ -171,6 +157,32 @@ export function TelaCarteira() {
   }
 
   const r = resumirCarteira(movimentos, mes);
+  const entradasMes = r.movimentosMes.filter((m) => m.valor > 0 && (!fonte || m.chave === fonte));
+  const saidasMes = r.movimentosMes.filter((m) => m.valor < 0);
+
+  const linha = (m: Movimento) => {
+    const d = descrever(m, nomes, contas, nomeFonte, descGasto);
+    const abrir = () =>
+      m.tipo === 'entrada' ? abrirPainel({ tipo: 'entrada', id: m.id }) : m.tipo === 'gasto' ? abrirPainel({ tipo: 'gasto', id: m.id }) : abrirPainel({ tipo: 'conta', id: m.ref });
+    const extra = m.tipo === 'entrada' ? descEntrada.get(m.id) : '';
+    return (
+      <li key={m.id}>
+        <button class="linha-info linha-botao" onClick={abrir}>
+          <span>
+            <strong>{d.titulo}</strong>
+            <small>
+              {' '}
+              · {formatarData(m.data)} · {d.detalhe}
+              {extra ? ` · ${extra}` : ''}
+            </small>
+          </span>
+          <strong class={`num ${m.valor > 0 ? 'positivo' : 'negativo'}`}>
+            {m.valor > 0 ? '+' : '−'} {formatarMoeda(Math.abs(m.valor))}
+          </strong>
+        </button>
+      </li>
+    );
+  };
 
   return (
     <>
@@ -205,6 +217,18 @@ export function TelaCarteira() {
               }}
             />
           </div>
+          <label class="filtro">
+            <span>Fonte</span>
+            <SeletorCadastro
+              valor={fonte}
+              aoMudar={(v) => {
+                fonteSalva = v;
+                setFonte(v);
+              }}
+              opcoes={ordenarPorNome(vivos(fontes))}
+              vazio="Todas as fontes"
+            />
+          </label>
         </div>
 
         {r.porFonteMes.length > 0 && (
@@ -239,41 +263,24 @@ export function TelaCarteira() {
           </button>
         </details>
 
-        <AlterarInicio atual={config.data_inicio} />
-
-        <h2 class="secao-titulo">Movimentos do mês</h2>
         {r.movimentosMes.length === 0 ? (
-          <div class="vazio">
-            <IconeCarteira />
-            <strong>Nada neste mês</strong>
-            Toque no + para registrar uma entrada.
-          </div>
+          <>
+            <h2 class="secao-titulo">Movimentos do mês</h2>
+            <div class="vazio">
+              <IconeCarteira />
+              <strong>Nada neste mês</strong>
+              Toque no + para registrar uma entrada.
+            </div>
+          </>
         ) : (
-          <ul class="lista compacta">
-            {r.movimentosMes.map((m) => {
-              const d = descrever(m, nomes, contas, nomeFonte, descGasto);
-              const abrir = () =>
-                m.tipo === 'entrada' ? abrirPainel({ tipo: 'entrada', id: m.id }) : m.tipo === 'gasto' ? abrirPainel({ tipo: 'gasto', id: m.id }) : abrirPainel({ tipo: 'conta', id: m.ref });
-              const extra = m.tipo === 'entrada' ? descEntrada.get(m.id) : '';
-              return (
-                <li key={m.id}>
-                  <button class="linha-info linha-botao" onClick={abrir}>
-                    <span>
-                      <strong>{d.titulo}</strong>
-                      <small>
-                        {' '}
-                        · {formatarData(m.data)} · {d.detalhe}
-                        {extra ? ` · ${extra}` : ''}
-                      </small>
-                    </span>
-                    <strong class={`num ${m.valor > 0 ? 'positivo' : 'negativo'}`}>
-                      {m.valor > 0 ? '+' : '−'} {formatarMoeda(Math.abs(m.valor))}
-                    </strong>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <>
+            <SecaoMovimentos titulo={fonte ? `Entradas · ${nomeFonte.get(fonte) ?? ''}` : 'Entradas'} movimentos={entradasMes} vazio="Nenhuma entrada neste mês." linha={linha} />
+            {fonte ? (
+              <p class="dica">As saídas não aparecem com o filtro de fonte: o dinheiro da carteira é um só, então as saídas não têm fonte.</p>
+            ) : (
+              <SecaoMovimentos titulo="Saídas" movimentos={saidasMes} vazio="Nenhuma saída neste mês." linha={linha} />
+            )}
+          </>
         )}
       </div>
     </>

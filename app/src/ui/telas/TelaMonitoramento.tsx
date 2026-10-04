@@ -7,10 +7,11 @@ import { formatarMesCurto, mesAtual } from '../../dominio/meses';
 import { useEntidade } from '../../dados/ganchos';
 import { useEstado } from '../estado';
 import { useContas, useNomes } from '../dados';
-import { Filtros, SeletorCadastro, SeletorMes } from '../componentes/Campos';
+import { Filtros, filtrosIguais, SeletorCadastro, SeletorMes } from '../componentes/Campos';
 import { IconeGrafico } from '../icones';
 
-let filtroSalvo: FiltroMonitor = { mes: mesAtual(), categoria_id: '', meio_pagamento_id: '', pessoa_id: '', status: 'Aberto' };
+const PADRAO: FiltroMonitor = { mes: mesAtual(), categoria_id: '', meio_pagamento_id: '', pessoa_id: '', status: 'Aberto' };
+let filtroSalvo = PADRAO;
 
 function Resumo({ titulo, itens, nome }: { titulo: string; itens: { id: string; total: number }[]; nome: (id: string) => string }) {
   return (
@@ -52,6 +53,7 @@ export function TelaMonitoramento() {
       <div class="conteudo">
         <Filtros
           ativosExtras={[f.categoria_id, f.meio_pagamento_id].filter(Boolean).length}
+          aoLimpar={filtrosIguais(f, PADRAO) ? undefined : () => mudar(PADRAO)}
           principais={
             <>
               <div class="filtro filtro-mes">

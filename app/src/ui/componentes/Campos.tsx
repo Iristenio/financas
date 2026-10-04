@@ -94,10 +94,14 @@ export function SeletorCadastro(props: { valor: string; aoMudar: (v: string) => 
   );
 }
 
+/** Os filtros estão iguais ao padrão da tela? (aí não há o que limpar) */
+export const filtrosIguais = <T extends object>(a: T, b: T) => (Object.keys(b) as (keyof T)[]).every((k) => a[k] === b[k]);
+
 /**
  * Área de filtros: no PC mostra tudo; no celular, os "extras" ficam atrás do botão "Mais filtros".
+ * aoLimpar: quando informado (algum filtro diferente do padrão), mostra o botão "Limpar filtros".
  */
-export function Filtros(props: { principais: preact.ComponentChildren; extras: preact.ComponentChildren; ativosExtras: number }) {
+export function Filtros(props: { principais: preact.ComponentChildren; extras: preact.ComponentChildren; ativosExtras: number; aoLimpar?: () => void }) {
   const [aberto, setAberto] = useState(false);
   return (
     <div class={`filtros${aberto ? ' abertos' : ''}`}>
@@ -106,6 +110,11 @@ export function Filtros(props: { principais: preact.ComponentChildren; extras: p
         {aberto ? 'Menos filtros' : `Mais filtros${props.ativosExtras ? ` (${props.ativosExtras})` : ''}`}
       </button>
       {props.extras}
+      {props.aoLimpar && (
+        <button type="button" class="botao pequeno limpar-filtros" onClick={props.aoLimpar}>
+          Limpar filtros
+        </button>
+      )}
     </div>
   );
 }

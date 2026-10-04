@@ -1,7 +1,7 @@
 // Pagar parcelas: parcelas em aberto agrupadas por conta, com seleção em lote (R10).
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Id, Parcela } from '../../dominio/tipos';
-import { pagarParcelas } from '../../dominio/lancamentos';
+import { contemTexto, pagarParcelas } from '../../dominio/lancamentos';
 import { paraEscolha } from '../../dominio/cadastros';
 import { formatarMoeda, somar } from '../../dominio/dinheiro';
 import { formatarMesCurto, mesAtual } from '../../dominio/meses';
@@ -11,17 +11,19 @@ import { useEntidade } from '../../dados/ganchos';
 import { gravarComDesfazer } from '../acoes/registros';
 import { useEstado } from '../estado';
 import { useContas, useNomes } from '../dados';
-import { Filtros, SeletorCadastro, SeletorMes } from '../componentes/Campos';
+import { Filtros, filtrosIguais, SeletorCadastro, SeletorMes } from '../componentes/Campos';
 import { IconePagar } from '../icones';
 
 interface FiltroPagar {
+  titulo: string;
   mes: string;
   meio_pagamento_id: string;
   categoria_id: string;
   pessoa_id: string;
 }
 
-let filtroSalvo: FiltroPagar = { mes: mesAtual(), meio_pagamento_id: '', categoria_id: '', pessoa_id: '' };
+const PADRAO: FiltroPagar = { titulo: '', mes: mesAtual(), meio_pagamento_id: '', categoria_id: '', pessoa_id: '' };
+let filtroSalvo = PADRAO;
 
 function CaixaGrupo({ marcadas, total, aoMudar }: { marcadas: number; total: number; aoMudar: (v: boolean) => void }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -49,6 +51,7 @@ export function TelaPagar() {
 
   // Grupos: uma conta com suas parcelas em aberto que passam no filtro
   const grupos = contas.lancamentos
+    .filter((l) => contemTexto(l.descricao, f.titulo))
     .filter((l) => (!f.meio_pagamento_id || l.meio_pagamento_id === f.meio_pagamento_id) && (!f.categoria_id || l.categoria_id === f.categoria_id))
     .filter((l) => !f.pessoa_id || (contas.rateios.get(l.id) ?? []).some((r) => r.pessoa_id === f.pessoa_id))
     .map((l) => {
@@ -92,8 +95,13 @@ export function TelaPagar() {
       <div class="conteudo com-barra">
         <Filtros
           ativosExtras={[f.categoria_id, f.pessoa_id].filter(Boolean).length}
+          aoLimpar={filtrosIguais(f, PADRAO) ? undefined : () => mudar(PADRAO)}
           principais={
             <>
+              <label class="filtro filtro-busca">
+                <span>Título</span>
+                <input class="campo" type="search" placeholder="Buscar pela descrição" value={f.titulo} onInput={(e) => mudar({ titulo: e.currentTarget.value })} />
+              </label>
               <div class="filtro filtro-mes">
                 <span>Mês</span>
                 <SeletorMes valor={f.mes} aoMudar={(mes) => mudar({ mes })} permitirTodos />

@@ -7,11 +7,12 @@ import { formatarMesCurto, mesAtual } from '../../dominio/meses';
 import { useEntidade } from '../../dados/ganchos';
 import { useEstado } from '../estado';
 import { useContas, useNomes } from '../dados';
-import { Filtros, SeletorCadastro, SeletorMes } from '../componentes/Campos';
+import { Filtros, filtrosIguais, SeletorCadastro, SeletorMes } from '../componentes/Campos';
 import { IconeLista } from '../icones';
 
 /** Filtros guardados enquanto o app está aberto (ao voltar para a tela, continuam). */
-let filtroSalvo: FiltroContas = { titulo: '', mes: mesAtual(), categoria_id: '', meio_pagamento_id: '', pessoa_id: '' };
+const PADRAO: FiltroContas = { titulo: '', mes: mesAtual(), categoria_id: '', meio_pagamento_id: '', pessoa_id: '' };
+let filtroSalvo = PADRAO;
 
 export function TelaLancamentos() {
   const { abrirPainel } = useEstado();
@@ -43,6 +44,7 @@ export function TelaLancamentos() {
       <div class="conteudo">
         <Filtros
           ativosExtras={[f.categoria_id, f.meio_pagamento_id, f.pessoa_id].filter(Boolean).length}
+          aoLimpar={filtrosIguais(f, PADRAO) ? undefined : () => mudar(PADRAO)}
           principais={
             <>
               <label class="filtro filtro-busca">

@@ -3,6 +3,7 @@ import {
   ajustarValor,
   anteciparParcelas,
   contasParaRenovar,
+  contemTexto,
   editarConta,
   excluirConta,
   filtrarContas,
@@ -100,6 +101,9 @@ describe('filtros da lista', () => {
     const todos = [a.lancamento, b.lancamento];
     const vazio = { titulo: '', mes: '', categoria_id: '', meio_pagamento_id: '', pessoa_id: '' };
     expect(filtrarContas(todos, parc, rat, { ...vazio, titulo: 'fog' }).map((l) => l.id)).toEqual(['a']);
+    expect(contemTexto('Exames mãe', ' MAE ')).toBe(true);
+    expect(contemTexto('Exames mãe', 'pai')).toBe(false);
+    expect(contemTexto('Qualquer', '')).toBe(true);
     expect(filtrarContas(todos, parc, rat, { ...vazio, mes: '2026-10' }).map((l) => l.id)).toEqual(['a']);
     expect(filtrarContas(todos, parc, rat, { ...vazio, pessoa_id: 'iris' }).map((l) => l.id)).toEqual(['b']);
   });
