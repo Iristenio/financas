@@ -153,6 +153,13 @@ export const IconeGrafico = (p: Props) => (
   </Base>
 );
 
+export const IconeTendencia = (p: Props) => (
+  <Base {...p}>
+    <path d="M4 20V4M4 20h16" />
+    <path d="M7 15l4-4 3 3 5-6" />
+  </Base>
+);
+
 export const IconeRecibo = (p: Props) => (
   <Base {...p}>
     <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" />

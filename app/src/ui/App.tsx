@@ -19,6 +19,7 @@ import { TelaLancamentos } from './telas/TelaLancamentos';
 import { TelaPagar } from './telas/TelaPagar';
 import { TelaMonitoramento } from './telas/TelaMonitoramento';
 import { TelaRecorrentes } from './telas/TelaRecorrentes';
+import { TelaPainel } from './telas/TelaPainel';
 import { TelaGastos } from './telas/TelaGastos';
 import { ResumoAdmin, TelaCarteira } from './telas/TelaCarteira';
 import { FormGasto } from './paineis/FormGasto';
@@ -31,6 +32,7 @@ const TELA: Record<Tela, () => JSX.Element> = {
   lancamentos: TelaLancamentos,
   pagar: TelaPagar,
   monitoramento: TelaMonitoramento,
+  painel: TelaPainel,
   recorrentes: TelaRecorrentes,
   gastos: TelaGastos,
   carteira: TelaCarteira,
@@ -109,6 +111,7 @@ function Estrutura() {
     lancamentos: [novaConta],
     pagar: [novaConta],
     monitoramento: [novaConta],
+    painel: [novaConta],
     recorrentes: [novaConta],
     gastos: [novoGasto],
     carteira: [novaEntrada],

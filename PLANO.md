@@ -47,3 +47,6 @@ O app antigo foi o **oficial** até a etapa 8 (virada em 2026-09-26). Até a eta
   O endereço antigo (iristenio.github.io/projeto-financas) agora só mostra o aviso "Este app foi substituído"
   com link para o novo. A planilha e o Apps Script antigos (conta Unilab) ficam guardados como arquivo.
 - Falta: instalar no aparelho do Paulo com o código dele (conferir que não aparecem Gastos/Carteira).
+- 2026-10-08: tela **Painel** (todos): valor devido por mês (pago × em aberto), saldo devedor no fim do mês e
+  "quando as dívidas acabam", em 24 meses (12 para trás e 12 à frente), com filtros de pessoa, recorrentes,
+  meio e categoria. Regras em `dominio/painel.ts` (com testes).

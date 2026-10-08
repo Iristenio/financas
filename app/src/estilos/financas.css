@@ -346,3 +346,58 @@ html.so-pc .botao.pequeno, .com-pc .botao.pequeno { min-height: 34px; }
 .link-esquerda { margin: -8px 0 0; text-align: left; }
 .carteira-inicio { max-width: 640px; }
 .secao-movimentos .secao-titulo { margin-top: 22px; }
+
+/* ============ Painel (gráficos) ============ */
+:root {
+  --serie-pago: #30a46c;
+  --serie-aberto: #2a78d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) { --serie-pago: #2fa56b; --serie-aberto: #3987e5; }
+}
+:root[data-tema='escuro'] { --serie-pago: #2fa56b; --serie-aberto: #3987e5; }
+
+.grafico-cartao { padding: 16px 16px 8px; margin-bottom: 16px; }
+.grafico-topo { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.grafico-topo h2 { font-size: 16px; }
+.legenda { display: flex; gap: 14px; font-size: 13px; color: var(--texto-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.chave { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.chave.serie-pago { background: var(--serie-pago); }
+.chave.serie-aberto { background: var(--serie-aberto); }
+.grafico-leitura { margin: 8px 0 4px; font-size: 14px; color: var(--texto-2); min-height: 2.6em; font-variant-numeric: tabular-nums; }
+.grafico-leitura strong { color: var(--texto); }
+.grafico-leitura .selo { margin-left: 6px; }
+.grafico-caixa { width: 100%; overflow: hidden; }
+.grafico { display: block; touch-action: pan-y; }
+.grafico text { font-family: var(--fonte); font-size: 11px; }
+.grafico-eixo { fill: var(--texto-2); font-variant-numeric: tabular-nums; }
+.grafico-eixo.forte { fill: var(--texto); font-weight: 700; }
+.grafico-faixa { fill: var(--texto-2); font-size: 10.5px; letter-spacing: 0.03em; }
+.grafico-grade { stroke: var(--borda); stroke-width: 1; shape-rendering: crispEdges; }
+.grafico-previsto { fill: var(--texto); opacity: 0.035; }
+.grafico-selecao { fill: var(--texto); opacity: 0.1; }
+.grafico-toque { fill: transparent; cursor: crosshair; }
+path.serie-pago { fill: var(--serie-pago); }
+path.serie-aberto { fill: var(--serie-aberto); }
+.linha-serie { fill: none; stroke: var(--serie-aberto); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.linha-serie.prevista { opacity: 0.45; }
+.linha-area { fill: var(--serie-aberto); opacity: 0.1; }
+.grafico-mira { stroke: var(--texto-2); stroke-width: 1; opacity: 0.5; }
+.linha-ponto { fill: var(--serie-aberto); stroke: var(--superficie); stroke-width: 2; }
+
+.tabela-rolagem { overflow-x: auto; margin: 8px 0 16px; }
+.tabela-painel { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabela-painel th, .tabela-painel td { padding: 6px 8px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--borda); }
+.tabela-painel th:first-child, .tabela-painel td:first-child { text-align: left; }
+.tabela-painel th { color: var(--texto-2); font-size: 12.5px; font-weight: 600; }
+.tabela-painel tr.atual td { font-weight: 700; }
+.fim-mes { margin-bottom: 10px; }
+.fim-mes > .linha-info { flex-wrap: wrap; gap: 2px 12px; }
+.fim-mes > .lista { margin-top: 4px; padding-left: 12px; }
+.fins-dividas .linha-botao { width: 100%; justify-content: space-between; text-align: left; }
+@media (max-width: 599px) {
+  .painel-dividas .totais { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .painel-dividas .total.destaque { grid-column: 1 / -1; }
+  .painel-dividas .total:not(.destaque) > strong { font-size: 17px; }
+}

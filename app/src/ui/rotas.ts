@@ -13,9 +13,10 @@ import {
   IconePagar,
   IconeRecibo,
   IconeRepetir,
+  IconeTendencia,
 } from './icones';
 
-export const TELAS = ['inicio', 'lancamentos', 'pagar', 'monitoramento', 'recorrentes', 'gastos', 'carteira', 'cadastros', 'config'] as const;
+export const TELAS = ['inicio', 'lancamentos', 'pagar', 'monitoramento', 'painel', 'recorrentes', 'gastos', 'carteira', 'cadastros', 'config'] as const;
 export type Tela = (typeof TELAS)[number];
 
 export interface ItemMenu {
@@ -34,6 +35,7 @@ export const MENU: ItemMenu[] = [
   { tela: 'lancamentos', rotulo: 'Lançamentos', curto: 'Contas', Icone: IconeLista },
   { tela: 'pagar', rotulo: 'Pagar parcelas', curto: 'Pagar', Icone: IconePagar },
   { tela: 'monitoramento', rotulo: 'Monitoramento', curto: 'Monitorar', Icone: IconeGrafico },
+  { tela: 'painel', rotulo: 'Painel', Icone: IconeTendencia },
   { tela: 'recorrentes', rotulo: 'Recorrentes', Icone: IconeRepetir },
   { tela: 'gastos', rotulo: 'Gastos', Icone: IconeRecibo, soAdmin: true },
   { tela: 'carteira', rotulo: 'Carteira', Icone: IconeCarteira, soAdmin: true },
